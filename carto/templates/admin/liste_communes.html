@@ -1,0 +1,192 @@
+{% extends 'admin/admin_dashboard.html' %}
+{% load static %}
+
+{% block admin_content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-4 border-bottom">
+    <div class="d-flex align-items-center">
+        <a href="{% url 'admin_dashboard' %}" class="btn btn-outline-secondary btn-sm me-3 rounded-circle shadow-sm" title="Retour au tableau de bord">
+            <i class="fa-solid fa-arrow-left"></i>
+        </a>
+        <h1 class="h2 fw-bold text-dark mb-0"><i class="fa-solid fa-city me-2 text-primary"></i>Gestion des Territoires</h1>
+    </div>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="{% url 'ajouter_commune' %}" class="btn btn-primary bg-gradient shadow-sm fw-medium">
+            <i class="fa-solid fa-plus me-2"></i>Ajouter une nouvelle Commune
+        </a>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm rounded-3 mb-4">
+    <div class="card-body p-3 bg-white rounded-3">
+        <div class="row g-2 align-items-center">
+            <div class="col flex-grow-1">
+                <div class="input-group">
+                    <span class="input-group-text bg-light border-end-0 text-muted shadow-sm"><i class="fa-solid fa-magnifying-glass"></i></span>
+                    <input type="text" id="rechercheInstantane" class="form-control bg-light border-start-0 ps-0 shadow-sm" placeholder="Recherche instantanée par nom de commune ou code INSEE...">
+                </div>
+            </div>
+            <div class="col-auto">
+                <button id="btnReinitialiser" class="btn btn-light border shadow-sm" title="Effacer la recherche">
+                    <i class="fa-solid fa-rotate-left text-secondary"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm rounded-3">
+    <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
+        <h5 class="fw-bold text-dark mb-0">
+            <i class="fa-solid fa-list me-2 text-secondary"></i>Communes et Collectivités enregistrées
+        </h5>
+        <span id="compteurCommunes" class="badge bg-primary px-3 py-2 rounded-pill fw-bold">{{ communes|length }} trouvé(s)</span>
+    </div>
+    <div class="table-responsive p-3">
+        <table class="table table-hover align-middle mb-0" id="tableauCommunes">
+            <thead class="table-light text-secondary small text-uppercase">
+                <tr>
+                    <th style="width: 140px;">Code INSEE</th>
+                    <th>Nom de la commune</th>
+                    <th>Population</th>
+                    <th>Superficie (Ha)</th>
+                    <th>Type Spatial PostGIS</th>
+                    <th class="text-center" style="width: 200px;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for commune in communes %}
+                <tr class="ligne-commune" 
+                    data-nom="{{ commune.nom|lower }}" 
+                    data-code="{{ commune.code_insee|lower }}">
+                    <td><span class="badge bg-light text-dark border font-monospace px-2 py-1.5">#{{ commune.code_insee }}</span></td>
+                    <td class="fw-semibold text-dark cell-nom">
+                        <div class="d-flex align-items-center">
+                            <div class="rounded-circle d-flex align-items-center justify-content-center text-white me-2 shadow-sm" style="width: 32px; height: 32px; background-color: #417690;">
+                                <i class="fa-solid fa-city small"></i>
+                            </div>
+                            <span>{{ commune.nom }}</span>
+                        </div>
+                    </td>
+                    <td><span class="fw-medium text-dark">{{ commune.population|default:"-" }} hab.</span></td>
+                    <td><span class="badge bg-light text-secondary border px-2 py-1.5">{{ commune.superficie|default:"-" }} Ha</span></td>
+                    <td><span class="text-primary small font-monospace fw-semibold"><i class="fa-solid fa-draw-polygon me-1"></i>POLYGON</span></td>
+                    <td class="text-center">
+                        <div class="btn-group shadow-sm rounded-2">
+                            <a href="{% url 'modifier_commune' commune.id %}" class="btn btn-sm btn-white border border-end-0 text-secondary px-2.5" title="Modifier la géométrie et les attributs">
+                                <i class="fa-solid fa-pen-to-square text-primary"></i> Modifier 
+                            </a>
+                            <a href="{% url 'supprimer_commune' commune.id %}" class="btn btn-sm btn-white border text-secondary px-2.5 btn-delete-confirm" title="Supprimer">
+                                <i class="fa-solid fa-trash-can text-danger"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr id="ligneVide">
+                    <td colspan="6" class="text-center py-5 text-muted">
+                        <i class="fa-solid fa-map-location-dot fa-3xl d-block mb-3 text-secondary"></i>
+                        Aucune commune enregistrée pour le moment.
+                    </td>
+                </tr>
+                {% endfor %}
+                
+                <tr id="aucunResultat" style="display: none;">
+                    <td colspan="6" class="text-center py-5 text-muted">
+                        <i class="fa-solid fa-magnifying-glass-blur fa-3xl d-block mb-3 text-warning"></i>
+                        Aucune commune ne correspond à vos critères de recherche instantanée.
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="modal fade" id="deleteConfirmationModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow rounded-4">
+            <div style="height: 6px; background: linear-gradient(90deg, #dc3545 0%, #b02a37 100%); border-radius: 4px 4px 0 0;"></div>
+            <div class="modal-body p-4 text-center">
+                <div class="d-inline-flex align-items-center justify-content-center bg-danger-subtle text-danger rounded-circle mb-3" style="width: 70px; height: 70px;">
+                    <i class="fa-solid fa-trash-can fa-2xl"></i>
+                </div>
+                <h4 class="fw-bold text-dark mb-2" id="deleteModalLabel">Confirmer la suppression</h4>
+                <p class="text-muted mb-4">
+                    Êtes-vous sûr de vouloir supprimer définitivement cette commune ?<br>
+                    <span class="text-danger small fw-semibold">
+                        <i class="fa-solid fa-exclamation-triangle me-1"></i> Cette action videra les tables PostGIS et rompra les liens avec ses secteurs associés.
+                    </span>
+                </p>
+                <div class="d-flex gap-2 justify-content-center">
+                    <button type="button" class="btn btn-light border px-4 py-2.5 fw-medium rounded-3 w-50" data-bs-dismiss="modal">
+                        Annuler
+                    </button>
+                    <a href="#" id="confirmDeleteButton" class="btn btn-danger bg-gradient px-4 py-2.5 fw-medium rounded-3 w-50 shadow-sm">
+                        <i class="fa-solid fa-trash-can me-2"></i>Supprimer
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const champRecherche = document.getElementById('rechercheInstantane');
+    const btnReinitialiser = document.getElementById('btnReinitialiser');
+    const lignes = document.querySelectorAll('.ligne-commune');
+    const aucunResultat = document.getElementById('aucunResultat');
+    const compteur = document.getElementById('compteurCommunes');
+
+    // Éléments de la modale de suppression
+    const deleteButtons = document.querySelectorAll('.btn-delete-confirm');
+    const confirmDeleteButton = document.getElementById('confirmDeleteButton');
+
+    // Interception dynamique pour afficher la modale Bootstrap
+    deleteButtons.forEach(button => {
+        button.addEventListener('click', function (event) {
+            event.preventDefault(); // Annule la redirection immédiate Django
+            const deleteUrl = this.getAttribute('href');
+            if (deleteUrl) {
+                confirmDeleteButton.setAttribute('href', deleteUrl); // Injecte l'url dans la modale
+                const deleteModal = new bootstrap.Modal(document.getElementById('deleteConfirmationModal'));
+                deleteModal.show(); // Déclenche l’affichage
+            }
+        });
+    });
+
+    function filtrerTableau() {
+        const terme = champRecherche.value.toLowerCase().trim();
+        let compteurTrouve = 0;
+
+        lignes.forEach(ligne => {
+            const nom = ligne.getAttribute('data-nom');
+            const code = ligne.getAttribute('data-code');
+
+            const correspondRecherche = nom.includes(terme) || code.includes(terme);
+
+            if (correspondRecherche) {
+                ligne.style.display = '';
+                compteurTrouve++;
+            } else {
+                ligne.style.display = 'none';
+            }
+        });
+
+        if (compteurTrouve === 0 && lignes.length > 0) {
+            aucunResultat.style.display = '';
+        } else {
+            aucunResultat.style.display = 'none';
+        }
+
+        compteur.textContent = `${compteurTrouve} trouvé(s)`;
+    }
+
+    champRecherche.addEventListener('input', filtrerTableau);
+
+    btnReinitialiser.addEventListener('click', function() {
+        champRecherche.value = '';
+        filtrerTableau();
+    });
+});
+</script>
+{% endblock admin_content %}

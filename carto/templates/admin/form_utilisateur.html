@@ -1,0 +1,154 @@
+{% extends 'admin/admin_dashboard.html' %}
+{% load static %}
+
+{% block admin_content %}
+<div class="pt-3 pb-2 mb-4 border-bottom">
+    <div class="d-flex align-items-center">
+        <a href="{% url 'liste_utilisateurs' %}" class="btn btn-outline-secondary btn-sm me-3 rounded-circle shadow-sm" title="Retour à la liste des agents">
+            <i class="fa-solid fa-arrow-left"></i>
+        </a>
+        <h1 class="h2 fw-bold text-dark mb-0">
+            {% if form.instance.pk %}
+                <i class="fa-solid fa-user-gear me-2 text-primary"></i>Modifier le compte Agent
+            {% else %}
+                <i class="fa-solid fa-user-plus me-2 text-primary"></i>Créer un nouveau compte Agent
+            {% endif %}
+        </h1>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-12">
+        
+        <div class="card border-0 shadow-sm rounded-4 mb-5">
+            <div class="card-body p-4 bg-white rounded-4">
+                
+                <div class="d-flex align-items-center gap-3 p-3 bg-light rounded-3 mb-4 border-start border-primary border-3">
+                    <div class="text-primary fs-4">
+                        <i class="fa-solid fa-circle-info"></i>
+                    </div>
+                    <div class="small text-muted">
+                        {% if form.instance.pk %}
+                            Modifiez les informations de l'agent <strong>{{ form.instance.username }}</strong>. Pour des raisons de sécurité, laissez les champs de mot de passe vides si vous ne souhaitez pas les changer.
+                        {% else %}
+                            Remplissez les champs ci-dessous pour accorder un accès à l'application. L'agent créé pourra se connecter immédiatement avec son rôle attitré.
+                        {% endif %}
+                    </div>
+                </div>
+
+                <form method="POST" novalidate autocomplete="off">
+                    {% csrf_token %}
+                    
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger alert-dismissible fade show border-0 rounded-3 shadow-sm mb-4 alerte-message" role="alert">
+                            {% for error in form.non_field_errors %}
+                                <div class="fw-medium small"><i class="fa-solid fa-triangle-exclamation me-2"></i>{{ error }}</div>
+                            {% endfor %}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endif %}
+
+                    <div class="row g-3">
+                        {% for field in form %}
+                            <div class="{% if field.name == 'is_active' %}col-12 mt-4 mb-2{% else %}col-12 col-md-6{% endif %}">
+                                
+                                {% if field.name == 'is_active' %}
+                                    <div class="form-check form-switch p-3 bg-light rounded-3 border d-flex align-items-center justify-content-between shadow-sm">
+                                        <div class="ms-2">
+                                            <label class="form-check-label fw-semibold text-dark cursor-pointer" for="{{ field.id_for_label }}">
+                                                <i class="fa-solid fa-toggle-on text-success me-2"></i>Statut d'activation du compte
+                                            </label>
+                                            <div class="form-text text-muted small mt-0.5">Décochez pour suspendre immédiatement l'accès de cet agent au SIG.</div>
+                                        </div>
+                                        <input class="form-check-input ms-0 fs-4 cursor-pointer text-success" type="checkbox" role="switch" name="{{ field.name }}" id="{{ field.id_for_label }}" {% if field.value %}checked{% endif %}>
+                                    </div>
+
+                                {% else %}
+                                    <label for="{{ field.id_for_label }}" class="form-label fw-semibold text-dark small mb-1.5">
+                                        {% if field.name == 'username' %}<i class="fa-solid fa-user-tag text-muted me-1.5"></i>{% endif %}
+                                        {% if field.name == 'first_name' %}<i class="fa-solid fa-id-card text-muted me-1.5"></i>{% endif %}
+                                        {% if field.name == 'last_name' %}<i class="fa-solid fa-id-card-clip text-muted me-1.5"></i>{% endif %}
+                                        {% if field.name == 'email' %}<i class="fa-solid fa-envelope text-muted me-1.5"></i>{% endif %}
+                                        {% if field.name == 'role' %}<i class="fa-solid fa-user-shield text-muted me-1.5"></i>{% endif %}
+                                        {% if 'mot_de_passe' in field.name %}<i class="fa-solid fa-key text-muted me-1.5"></i>{% endif %}
+                                        
+                                        {{ field.label }}
+                                        {% if field.field.required %}<span class="text-danger">*</span>{% endif %}
+                                    </label>
+                                    
+                                    <div class="input-group shadow-sm rounded-3 overflow-hidden">
+                                        {{ field }}
+                                    </div>
+
+                                    {% if field.help_text %}
+                                        <div class="form-text text-muted small mt-1 font-italic">{{ field.help_text|safe }}</div>
+                                    {% endif %}
+                                {% endif %}
+                                
+                                {% if field.errors %}
+                                    <div class="text-danger small fw-medium mt-1.5 px-1">
+                                        {% for error in field.errors %}
+                                            <div class="d-flex align-items-center gap-1">
+                                                <i class="fa-solid fa-circle-exclamation text-danger"></i>
+                                                <span>{{ error }}</span>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                                
+                            </div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="border-top mt-4 pt-3.5 d-flex gap-2 justify-content-end">
+                        <a href="{% url 'liste_utilisateurs' %}" class="btn btn-light border px-4 py-2-5 fw-medium rounded-3 transition-all">
+                            Annuler
+                        </a>
+                        <button type="submit" class="btn btn-primary bg-gradient px-4 py-2-5 fw-medium rounded-3 shadow-sm transition-all">
+                            <i class="fa-solid fa-floppy-disk me-2"></i>
+                            {% if form.instance.pk %}Enregistrer les modifications{% else %}Créer le compte agent{% endif %}
+                        </button>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<style>
+.cursor-pointer { cursor: pointer; }
+.pt-3.5 { padding-top: 1.25rem !important; }
+.py-2-5 { padding-top: 0.625rem; padding-bottom: 0.625rem; }
+.mb-1.5 { margin-bottom: 0.375rem !important; }
+.mt-1.5 { margin-top: 0.375rem !important; }
+.transition-all { transition: all 0.2s ease-in-out; }
+.transition-all:hover { transform: translateY(-1px); }
+/* Force un comportement fluide sur la totalité de la largeur pour les entrées de données */
+.input-group > .form-control, .input-group > .form-select {
+    border: 1px solid #dee2e6 !important;
+    padding: 0.625rem 0.75rem;
+    font-size: 0.95rem;
+    width: 100%;
+}
+.input-group > .form-control:focus, .input-group > .form-select:focus {
+    border-color: #86b7fe !important;
+    box-shadow: none !important;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    // Évanescence automatique pour les éventuelles erreurs hors champ (non-field-errors) après 4 secondes
+    setTimeout(function() {
+        document.querySelectorAll('.alerte-message').forEach(alerte => {
+            const bsAlert = new bootstrap.Alert(alerte);
+            alerte.style.transition = "opacity 0.6s ease";
+            alerte.style.opacity = "0";
+            setTimeout(() => bsAlert.close(), 600);
+        });
+    }, 4000);
+});
+</script>
+{% endblock admin_content %}

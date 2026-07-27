@@ -1,0 +1,236 @@
+{% extends 'admin/admin_dashboard.html' %}
+{% load static %}
+
+{% block admin_content %}
+<style>
+    /* Styles pour la galerie d'icônes */
+    .icon-picker-box {
+        max-height: 240px;
+        overflow-y: auto;
+        border: 1px solid #dee2e6;
+        border-top: none;
+        background: #fff;
+    }
+    .icon-category-title {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        background-color: #f8f9fa;
+        color: #6c757d;
+        padding: 6px 12px;
+        font-weight: 700;
+    }
+    .icon-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
+        gap: 6px;
+        padding: 10px;
+    }
+    .icon-item {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 38px;
+        width: 38px;
+        border: 1px solid #e9ecef;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        background-color: #fff;
+        color: #495057;
+    }
+    .icon-item:hover {
+        background-color: #e7f1ff;
+        border-color: #0d6efd;
+        color: #0d6efd;
+        transform: scale(1.1);
+    }
+    .icon-item.active {
+        background-color: #0d6efd;
+        border-color: #0d6efd;
+        color: #fff;
+    }
+</style>
+
+<div class="d-flex align-items-center pt-3 pb-2 mb-4 border-bottom">
+    <a href="{% url 'liste_types_equipements' %}" class="btn btn-outline-secondary btn-sm me-3 rounded-circle shadow-sm" title="Retour à la liste">
+        <i class="fa-solid fa-arrow-left"></i>
+    </a>
+    <h1 class="h2 fw-bold text-dark mb-0">
+        <i class="fa-solid fa-tags me-2 text-primary"></i>
+        {% if type_id %}Modifier la Catégorie{% else %}Nouvelle Catégorie d'Infrastructures{% endif %}
+    </h1>
+</div>
+
+<div class="row w-100 m-0">
+    <div class="col-12 p-0">
+        <div class="card border-0 shadow-sm rounded-3">
+            <div class="card-header bg-white py-3 border-bottom-0">
+                <h5 class="fw-bold text-secondary mb-0">
+                    <i class="fa-solid fa-pen-to-square me-2 text-muted"></i>Configuration de la catégorie d'équipement
+                </h5>
+            </div>
+            <div class="card-body p-4 bg-white rounded-bottom-3">
+                <form method="POST" action="{% if type_id %}{% url 'modifier_type_equipement' type_id %}{% else %}{% url 'ajouter_type_equipement' %}{% endif %}" class="needs-validation" novalidate>
+                    {% csrf_token %}
+                    
+                    <div class="row g-4">
+                        <div class="col-12 col-md-7">
+                            <label for="libelleCategorie" class="form-label small fw-bold text-dark">Libellé de la catégorie</label>
+                            <div class="input-group has-validation">
+                                <span class="input-group-text bg-light border-end-0 text-muted shadow-sm"><i class="fa-solid fa-font"></i></span>
+                                <input type="text" name="libelle" id="libelleCategorie" class="form-control bg-light border-start-0 shadow-sm fw-medium" placeholder="Ex: École Primaire, Centre de Santé, Forage..." value="{{ type_equipement.libelle|default:'' }}" required>
+                                <div class="invalid-feedback">
+                                    <i class="fa-solid fa-circle-exclamation me-1"></i> Ce champ est obligatoire.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-md-5 position-relative">
+                            <label class="form-label small fw-bold text-dark">Icône cartographique associée</label>
+                            <div class="input-group has-validation">
+                                <span class="input-group-text bg-light border-end-0 text-muted shadow-sm">
+                                    <i id="aperçuIcone" class="{{ type_equipement.icone|default:'fa-solid fa-question' }} text-primary fs-5"></i>
+                                </span>
+                                
+                                <input type="text" name="icone" id="iconeAssociee" class="form-control bg-light border-start-0 shadow-sm fw-medium" value="{{ type_equipement.icone|default:'' }}" placeholder="Cliquez sur 'Choisir une icône' ci-dessous" readonly required>
+                                
+                                <button class="btn btn-outline-primary shadow-sm" type="button" id="btnTogglePicker">
+                                    <i class="fa-solid fa-icons me-1"></i> Choisir une icône
+                                </button>
+                                
+                                <div class="invalid-feedback">
+                                    <i class="fa-solid fa-circle-exclamation me-1"></i> Veuillez choisir une icône dans la liste.
+                                </div>
+                            </div>
+
+                            <div id="iconPickerContainer" class="icon-picker-box rounded-bottom shadow-lg position-absolute w-100 z-3 d-none">
+                                <div class="icon-category-title">Éducation & Formation</div>
+                                <div class="icon-grid">
+                                    <div class="icon-item" data-icon="fa-solid fa-graduation-cap" title="École / Diplôme"><i class="fa-solid fa-graduation-cap"></i></div>
+                                    <div class="icon-item" data-icon="fa-solid fa-book-open" title="Bibliothèque"><i class="fa-solid fa-book-open"></i></div>
+                                    <div class="icon-item" data-icon="fa-solid fa-school" title="Bâtiment Scolaire"><i class="fa-solid fa-school"></i></div>
+                                    <div class="icon-item" data-icon="fa-solid fa-child" title="Maternelle / Enfance"><i class="fa-solid fa-child"></i></div>
+                                </div>
+                                <div class="icon-category-title">Santé & Social</div>
+                                <div class="icon-grid">
+                                    <div class="icon-item" data-icon="fa-solid fa-house-medical" title="Dispensaire / Centre Médical"><i class="fa-solid fa-house-medical"></i></div>
+                                    <div class="icon-item" data-icon="fa-solid fa-hospital" title="Hôpital"><i class="fa-solid fa-hospital"></i></div>
+                                    <div class="icon-item" data-icon="fa-solid fa-kit-medical" title="Pharmacie / Secours"><i class="fa-solid fa-kit-medical"></i></div>
+                                    <div class="icon-item" data-icon="fa-solid fa-stethoscope" title="Consultation"><i class="fa-solid fa-stethoscope"></i></div>
+                                </div>
+                                <div class="icon-category-title">Hydraulique & Assainissement</div>
+                                <div class="icon-grid">
+                                    <div class="icon-item" data-icon="fa-solid fa-faucet-drip" title="Borne Fontaine / Eau Potable"><i class="fa-solid fa-faucet-drip"></i></div>
+                                    <div class="icon-item" data-icon="fa-solid fa-droplet" title="Point d'eau / Puits"><i class="fa-solid fa-droplet"></i></div>
+                                    <div class="icon-item" data-icon="fa-solid fa-faucet" title="Robinetterie"><i class="fa-solid fa-faucet"></i></div>
+                                    <div class="icon-item" data-icon="fa-solid fa-toilet" title="Latrines / Sanitaires"><i class="fa-solid fa-toilet"></i></div>
+                                </div>
+                                <div class="icon-category-title">Services Publics & Administration</div>
+                                <div class="icon-grid">
+                                    <div class="icon-item" data-icon="fa-solid fa-building-columns" title="Mairie / Préfecture / Banque"><i class="fa-solid fa-building-columns"></i></div>
+                                    <div class="icon-item" data-icon="fa-solid fa-building-shield" title="Commissariat / Sécurité"><i class="fa-solid fa-building-shield"></i></div>
+                                    <div class="icon-item" data-icon="fa-solid fa-envelope" title="Poste / Courrier"><i class="fa-solid fa-envelope"></i></div>
+                                    <div class="icon-item" data-icon="fa-solid fa-landmark" title="Édifice Public"><i class="fa-solid fa-landmark"></i></div>
+                                </div>
+                                <div class="icon-category-title">Commerce & Économie</div>
+                                <div class="icon-grid">
+                                    <div class="icon-item" data-icon="fa-solid fa-shop" title="Marché Local / Boutiques"><i class="fa-solid fa-shop"></i></div>
+                                    <div class="icon-item" data-icon="fa-solid fa-cart-shopping" title="Commerce"><i class="fa-solid fa-cart-shopping"></i></div>
+                                    <div class="icon-item" data-icon="fa-solid fa-cow" title="Abattoir / Zone Élevage"><i class="fa-solid fa-cow"></i></div>
+                                    <div class="icon-item" data-icon="fa-solid fa-gas-pump" title="Station Service"><i class="fa-solid fa-gas-pump"></i></div>
+                                </div>
+                                <div class="icon-category-title">Transports & Énergie</div>
+                                <div class="icon-grid">
+                                    <div class="icon-item" data-icon="fa-solid fa-bolt" title="Électricité / Transformateur"><i class="fa-solid fa-bolt"></i></div>
+                                    <div class="icon-item" data-icon="fa-solid fa-solar-panel" title="Centrale Solaire"><i class="fa-solid fa-solar-panel"></i></div>
+                                    <div class="icon-item" data-icon="fa-solid fa-road" title="Gare Routière / Axe Routier"><i class="fa-solid fa-road"></i></div>
+                                    <div class="icon-item" data-icon="fa-solid fa-bridge" title="Pont / Ouvrage de franchissement"><i class="fa-solid fa-bridge"></i></div>
+                                </div>
+                                <div class="icon-category-title">Divers</div>
+                                <div class="icon-grid">
+                                    <div class="icon-item" data-icon="fa-solid fa-tree" title="Espace Vert / Jardin public"><i class="fa-solid fa-tree"></i></div>
+                                    <div class="icon-item" data-icon="fa-solid fa-church" title="Lieu de Culte Christianisme"><i class="fa-solid fa-church"></i></div>
+                                    <div class="icon-item" data-icon="fa-solid fa-mosque" title="Lieu de Culte Islam"><i class="fa-solid fa-mosque"></i></div>
+                                    <div class="icon-item" data-icon="fa-solid fa-location-dot" title="Repère Standard"><i class="fa-solid fa-location-dot"></i></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr class="my-4 text-secondary-subtle">
+
+                    <div class="d-flex gap-2 justify-content-end">
+                        <a href="{% url 'liste_types_equipements' %}" class="btn btn-light border px-4 py-2.5 fw-medium rounded-3">
+                            Annuler
+                        </a>
+                        <button type="submit" class="btn btn-primary bg-gradient px-4 py-2.5 fw-medium rounded-3 shadow-sm">
+                            <i class="fa-solid fa-floppy-disk me-2"></i>
+                            {% if type_id %}Enregistrer les modifications{% else %}Créer la catégorie{% endif %}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const btnTogglePicker = document.getElementById('btnTogglePicker');
+    const iconPickerContainer = document.getElementById('iconPickerContainer');
+    const inputIcone = document.getElementById('iconeAssociee');
+    const baliseAperçu = document.getElementById('aperçuIcone');
+    const iconItems = document.querySelectorAll('.icon-item');
+
+    // Ouvrir / Fermer le sélecteur d'icônes visuel
+    btnTogglePicker.addEventListener('click', function(e) {
+        e.stopPropagation();
+        iconPickerContainer.classList.toggle('d-none');
+    });
+
+    // Fermer le sélecteur si on clique n'importe où ailleurs sur l'écran
+    document.addEventListener('click', function(e) {
+        if (!iconPickerContainer.contains(e.target) && e.target !== btnTogglePicker) {
+            iconPickerContainer.addClassList = iconPickerContainer.classList.add('d-none');
+        }
+    });
+
+    // Gestion du clic sur une icône de la grille
+    iconItems.forEach(item => {
+        // Mettre en surbrillance l'icône déjà enregistrée en mode édition
+        if(inputIcone.value === item.getAttribute('data-icon')) {
+            item.classList.add('active');
+        }
+
+        item.addEventListener('click', function() {
+            // Retirer l'état actif des autres icônes
+            iconItems.forEach(i => i.classList.remove('active'));
+            
+            // Sélectionner la nouvelle icône
+            this.classList.add('active');
+            const iconClass = this.getAttribute('data-icon');
+            
+            // Mettre à jour l'input et l'aperçu visuel de gauche
+            inputIcone.value = iconClass;
+            baliseAperçu.className = iconClass + ' text-primary fs-5';
+            
+            // Fermer le conteneur automatiquement après le choix
+            iconPickerContainer.classList.add('d-none');
+        });
+    });
+
+    // Validation standard Bootstrap
+    const forms = document.querySelectorAll('.needs-validation');
+    Array.from(forms).forEach(form => {
+        form.addEventListener('submit', event => {
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            form.classList.add('was-validated');
+        }, false);
+    });
+});
+</script>
+{% endblock admin_content %}

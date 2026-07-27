@@ -1,0 +1,217 @@
+{% extends 'admin/admin_dashboard.html' %}
+{% load static %}
+
+{% block admin_content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-4 border-bottom">
+    <div class="d-flex align-items-center">
+        <a href="{% url 'admin_dashboard' %}" class="btn btn-outline-secondary btn-sm me-3 rounded-circle shadow-sm" title="Retour au tableau de bord">
+            <i class="fa-solid fa-arrow-left"></i>
+        </a>
+        <h1 class="h2 fw-bold text-dark mb-0"><i class="fa-solid fa-users-gear me-2 text-primary"></i>Gestion des Groupes & Profils</h1>
+    </div>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="{% url 'ajouter_groupe' %}" class="btn btn-primary bg-gradient shadow-sm fw-medium text-white rounded-3 px-4 py-2">
+            <i class="fa-solid fa-plus me-2"></i>Créer un Profil
+        </a>
+    </div>
+</div>
+
+{% if messages %}
+    {% for message in messages %}
+        <div class="alert alert-success alert-dismissible fade show shadow-sm border-0 mb-4 alerte-message" role="alert">
+            <i class="fa-solid fa-circle-check me-2"></i>{{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    {% endfor %}
+{% endif %}
+
+<div class="card border-0 shadow-sm rounded-4 mb-4">
+    <div class="card-body p-3 bg-white rounded-4">
+        <div class="row g-2 align-items-center">
+            <div class="col flex-grow-1">
+                <div class="input-group rounded-3 overflow-hidden">
+                    <span class="input-group-text bg-light border-end-0 text-muted border-0"><i class="fa-solid fa-magnifying-glass"></i></span>
+                    <input type="text" id="rechercheInstantane" class="form-control bg-light border-0 ps-0 form-control-lg fs-6" placeholder="Recherche instantanée par nom de groupe ou rôle...">
+                </div>
+            </div>
+            <div class="col-auto">
+                <button id="btnReinitialiser" class="btn btn-light border rounded-3 p-2-5" title="Effacer la recherche" style="height: 43px;">
+                    <i class="fa-solid fa-rotate-left text-secondary"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm rounded-4">
+    <div class="card-header bg-white py-3.5 border-0 d-flex justify-content-between align-items-center rounded-top-4">
+        <h5 class="fw-bold text-dark mb-0">
+            <i class="fa-solid fa-list me-2 text-secondary"></i>Rôles et Droits d'accès applicatifs
+        </h5>
+        <span id="compteurGroupes" class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-2 rounded-pill fw-bold">{{ groupes|length }} trouvé(s)</span>
+    </div>
+    <div class="table-responsive px-3 pb-3">
+        <table class="table table-hover align-middle mb-0" id="tableauGroupes">
+            <thead class="table-light text-secondary small text-uppercase">
+                <tr>
+                    <th class="ps-3 py-3 border-0 rounded-start-3">Nom du Profil / Groupe</th>
+                    <th class="text-center py-3 border-0 rounded-end-3" style="width: 200px;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for groupe in groupes %}
+                <tr class="ligne-groupe border-bottom" data-nom="{{ groupe.name|lower }}">
+                    <td class="fw-semibold text-dark cell-nom ps-3 py-3">
+                        <div class="d-flex align-items-center">
+                            <div class="p-2 bg-light rounded-circle me-2.5 text-primary d-flex align-items-center justify-content-center" style="width: 35px; height: 35px;">
+                                <i class="fa-solid fa-user-shield"></i>
+                            </div>
+                            <span>{{ groupe.name }}</span>
+                        </div>
+                    </td>
+                    <td class="text-center py-3">
+                        <div class="d-flex justify-content-center gap-1.5">
+                            <a href="{% url 'modifier_groupe' groupe.id %}" class="btn btn-sm btn-light border rounded-3 px-2.5 py-1.5 text-primary bg-white shadow-sm action-btn" title="Modifier les droits d'accès">
+                                <i class="fa-solid fa-pen-to-square me-1"></i> Droits
+                            </a>
+                            <a href="{% url 'supprimer_groupe' groupe.id %}" class="btn btn-sm btn-light border rounded-3 px-2.5 py-1.5 text-danger bg-white shadow-sm action-btn btn-delete-confirm" title="Supprimer le groupe">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr id="ligneVide">
+                    <td colspan="2" class="text-center py-5 text-muted border-0">
+                        <i class="fa-solid fa-users-gear fa-3xl d-block mb-3 text-secondary opacity-50"></i>
+                        Aucun groupe ou profil configuré pour le moment.
+                    </td>
+                </tr>
+                {% endfor %}
+                
+                <tr id="aucunResultat" style="display: none;">
+                    <td colspan="2" class="text-center py-5 text-muted border-0">
+                        <i class="fa-solid fa-magnifying-glass-blur fa-3xl d-block mb-3 text-primary opacity-50"></i>
+                        Aucun profil ne correspond à vos critères de recherche instantanée.
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="modal fade" id="deleteConfirmationModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow rounded-4">
+            <div style="height: 6px; background: linear-gradient(90deg, #dc3545 0%, #b02a37 100%); border-radius: 4px 4px 0 0;"></div>
+            <div class="modal-body p-4 text-center">
+                <div class="d-inline-flex align-items-center justify-content-center bg-danger-subtle text-danger rounded-circle mb-3" style="width: 70px; height: 70px;">
+                    <i class="fa-solid fa-trash-can fa-2xl"></i>
+                </div>
+                <h4 class="fw-bold text-dark mb-2" id="deleteModalLabel">Confirmer la suppression</h4>
+                <p class="text-muted mb-4">
+                    Êtes-vous sûr de vouloir supprimer définitivement ce profil / groupe ?<br>
+                    <span class="text-danger small fw-semibold">
+                        <i class="fa-solid fa-exclamation-triangle me-1"></i> Attention : Tous les utilisateurs rattachés à ce profil perdront instantanément les permissions associées.
+                    </span>
+                </p>
+                <div class="d-flex gap-2 justify-content-center">
+                    <button type="button" class="btn btn-light border px-4 py-2.5 fw-medium rounded-3 w-50" data-bs-dismiss="modal">
+                        Annuler
+                    </button>
+                    <a href="#" id="confirmDeleteButton" class="btn btn-danger bg-gradient px-4 py-2.5 fw-medium rounded-3 w-50 shadow-sm">
+                        <i class="fa-solid fa-trash-can me-2"></i>Supprimer
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.py-3.5 { padding-top: 1.15rem !important; padding-bottom: 1.15rem !important; }
+.me-2.5 { margin-right: 0.65rem !important; }
+.gap-1.5 { gap: 0.4rem !important; }
+.p-2-5 { padding: 0.55rem 0.75rem !important; }
+.action-btn {
+    transition: all 0.2s ease-in-out;
+}
+.action-btn:hover {
+    transform: translateY(-1px);
+    background-color: #f8f9fa !important;
+}
+.bg-primary-subtle {
+    background-color: rgba(13, 110, 253, 0.1) !important;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const champRecherche = document.getElementById('rechercheInstantane');
+    const btnReinitialiser = document.getElementById('btnReinitialiser');
+    const lignes = document.querySelectorAll('.ligne-groupe');
+    const aucunResultat = document.getElementById('aucunResultat');
+    const compteur = document.getElementById('compteurGroupes');
+
+    // Éléments de la modale de suppression
+    const deleteButtons = document.querySelectorAll('.btn-delete-confirm');
+    const confirmDeleteButton = document.getElementById('confirmDeleteButton');
+
+    // Évanescence automatique des alertes de succès (4 secondes)
+    setTimeout(function() {
+        document.querySelectorAll('.alerte-message').forEach(alerte => {
+            const bsAlert = new bootstrap.Alert(alerte);
+            alerte.style.transition = "opacity 0.6s ease";
+            alerte.style.opacity = "0";
+            setTimeout(() => bsAlert.close(), 600);
+        });
+    }, 4000);
+
+    // Interception dynamique du clic pour la modale Bootstrap uniforme
+    deleteButtons.forEach(button => {
+        button.addEventListener('click', function (event) {
+            event.preventDefault();
+            const deleteUrl = this.getAttribute('href');
+            if (deleteUrl) {
+                confirmDeleteButton.setAttribute('href', deleteUrl);
+                const deleteModal = new bootstrap.Modal(document.getElementById('deleteConfirmationModal'));
+                deleteModal.show();
+            }
+        });
+    });
+
+    // Fonction de filtrage de tableau en temps réel
+    function filtrerTableau() {
+        const terme = champRecherche.value.toLowerCase().trim();
+        let compteurTrouve = 0;
+
+        lignes.forEach(ligne => {
+            const nom = ligne.getAttribute('data-nom');
+            const correspondRecherche = nom.includes(terme);
+
+            if (correspondRecherche) {
+                ligne.style.display = '';
+                compteurTrouve++;
+            } else {
+                ligne.style.display = 'none';
+            }
+        });
+
+        if (compteurTrouve === 0 && lignes.length > 0) {
+            aucunResultat.style.display = '';
+        } else {
+            aucunResultat.style.display = 'none';
+        }
+
+        compteur.textContent = `${compteurTrouve} trouvé(s)`;
+    }
+
+    champRecherche.addEventListener('input', filtrerTableau);
+
+    btnReinitialiser.addEventListener('click', function() {
+        champRecherche.value = '';
+        filtrerTableau();
+    });
+});
+</script>
+{% endblock admin_content %}

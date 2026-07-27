@@ -1,0 +1,265 @@
+{% extends 'admin/admin_dashboard.html' %}
+
+{% block admin_content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-4 border-bottom">
+    <div class="d-flex align-items-center">
+        <a href="{% url 'admin_dashboard' %}" class="btn btn-outline-secondary btn-sm me-3 rounded-circle shadow-sm" title="Retour au tableau de bord">
+            <i class="fa-solid fa-arrow-left"></i>
+        </a>
+        <h1 class="h2 fw-bold text-dark mb-0"><i class="fa-solid fa-boxes-stacked me-2 text-primary"></i>Gestion des Équipements</h1>
+    </div>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="{% url 'ajouter_equipement' %}" class="btn btn-primary bg-gradient shadow-sm fw-medium">
+            <i class="fa-solid fa-plus me-2"></i>Saisir un nouvel Équipement
+        </a>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm rounded-3 mb-4">
+    <div class="card-body p-3 bg-white rounded-3">
+        <div class="row g-2 align-items-center">
+            <div class="col flex-grow-1">
+                <div class="input-group">
+                    <span class="input-group-text bg-light border-end-0 text-muted shadow-sm"><i class="fa-solid fa-magnifying-glass"></i></span>
+                    <input type="text" id="rechercheInstantane" class="form-control bg-light border-start-0 ps-0 shadow-sm" placeholder="Recherche instantanée par nom, code ou type...">
+                </div>
+            </div>
+            <div class="col-auto">
+                <button class="btn btn-outline-primary shadow-sm fw-medium d-flex align-items-center" type="button" data-bs-toggle="collapse" data-bs-target="#zoneFiltres" aria-expanded="false" aria-controls="zoneFiltres">
+                    <i class="fa-solid fa-sliders me-2"></i> Option Filtres <i class="fa-solid fa-chevron-down ms-2 small"></i>
+                </button>
+            </div>
+            <div class="col-auto">
+                <button id="btnReinitialiser" class="btn btn-light border shadow-sm" title="Effacer la recherche">
+                    <i class="fa-solid fa-rotate-left text-secondary"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="collapse" id="zoneFiltres">
+            <div class="p-3 mt-3 bg-light rounded-3 border">
+                <div class="row g-3">
+                    <div class="col-12 col-md-6">
+                        <label class="form-label small fw-bold text-secondary">Filtrer par Statut</label>
+                        <select id="filtreStatut" class="form-select bg-white border-secondary-subtle">
+                            <option value="">Tous les statuts</option>
+                            {% for st in tous_les_statuts %}
+                                <option value="{{ st.libelle }}">{{ st.libelle }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label class="form-label small fw-bold text-secondary">Filtrer par Type d'Équipement</label>
+                        <select id="filtreType" class="form-select bg-white border-secondary-subtle">
+                            <option value="">Tous les types</option>
+                            {% for type in tous_les_types %}
+                                <option value="{{ type.libelle }}">{{ type.libelle }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm rounded-3">
+    <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
+        <h5 class="fw-bold text-dark mb-0">
+            <i class="fa-solid fa-list me-2 text-secondary"></i>Liste des infrastructures enregistrées
+        </h5>
+        <span id="compteurEquipements" class="badge bg-primary px-3 py-2 rounded-pill fw-bold">{{ equipements|length }} trouvé(s)</span>
+    </div>
+    <div class="table-responsive p-3">
+        <table class="table table-hover align-middle mb-0" id="tableauEquipements">
+            <thead class="table-light text-secondary small text-uppercase">
+                <tr>
+                    <th>Code ID</th>
+                    <th>Nom</th>
+                    <th>Catégorie</th>
+                    <th>Commune / Secteur</th>
+                    <th>Statut</th>
+                    <th class="text-center" style="width: 200px;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for eq in equipements %}
+                <tr class="ligne-equipement" 
+                    data-nom="{{ eq.nom|lower }}" 
+                    data-code="{{ eq.code_identification|lower }}" 
+                    data-type="{{ eq.type_equipement.libelle|lower }}" 
+                    data-statut="{{ eq.statut.libelle }}">
+                    <td><span class="badge bg-light text-dark border font-monospace px-2 py-1.5">{{ eq.code_identification }}</span></td>
+                    <td class="fw-semibold text-dark cell-nom">{{ eq.nom }}</td>
+                    <td>
+                        {% if "forage" in eq.type_equipement.libelle|lower or "faucet" in eq.type_equipement.libelle|lower %}
+                            <i class="fa
+-solid fa-faucet-drip me-2 text-warning"></i>
+                        {% elif "école" in eq.type_equipement.libelle|lower or "scolaire" in eq.type_equipement.libelle|lower %}
+                            <i class="fa-solid fa-graduation-cap me-2 text-primary"></i>
+                        {% elif "santé" in eq.type_equipement.libelle|lower or "dispensaire" in eq.type_equipement.libelle|lower %}
+                            <i class="fa-solid fa-house-medical me-2 text-danger"></i>
+                        {% else %}
+                            <i class="fa-solid fa-location-crosshairs me-2 text-secondary"></i>
+                        {% endif %}
+                        {{ eq.type_equipement.libelle }}
+                    </td>
+                    <td>
+                        <span class="d-block fw-medium small text-dark"><i class="fa-solid fa-city text-muted me-1 small"></i>{{ eq.secteur.commune.nom }}</span>
+                        <small class="text-muted"><i class="fa-solid fa-location-dot me-1 small"></i>Secteur: {{ eq.secteur.nom }}</small>
+                    </td>
+                    <td>
+                        {% if eq.statut.libelle == "Opérationnel" %}
+                            <span class="badge bg-success bg-gradient px-2 py-1.5"><i class="fa-solid fa-circle-check me-1"></i>Opérationnel</span>
+                        {% elif eq.statut.libelle == "En maintenance" %}
+                            <span class="badge bg-warning text-dark px-2 py-1.5"><i class="fa-solid fa-wrench me-1"></i>Maintenance</span>
+                        {% else %}
+                            <span class="badge bg-danger bg-gradient px-2 py-1.5"><i class="fa-solid fa-ban me-1"></i>En Panne</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-center">
+                        <div class="btn-group shadow-sm rounded-2">
+                            {% if eq.cree_par and eq.cree_par == request.user or request.user.is_superuser %}
+                                <a href="{% url 'modifier_equipement' eq.id %}" class="btn btn-sm btn-white border border-end-0 text-secondary px-2.5" title="Modifier">
+                                    <i class="fa-solid fa-pen-to-square text-primary"></i> Modifier 
+                                </a>
+                                <a href="{% url 'supprimer_equipement' eq.id %}" class="btn btn-sm btn-white border text-secondary px-2.5 btn-delete-confirm" title="Supprimer">
+                                    <i class="fa-solid fa-trash-can text-danger"></i>
+                                </a>
+                            {% else %}
+                                <a href="#" class="btn btn-sm btn-white border text-secondary px-2.5 disabled" title="Non autorisé">
+                                    <i class="fa-solid fa-eye text-secondary"></i> Consulter
+                                </a>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr id="ligneVide">
+                    <td colspan="6" class="text-center py-5 text-muted">
+                        <i class="fa-solid fa-folder-open fa-3xl d-block mb-3 text-secondary"></i>
+                        Aucun équipement enregistré pour le moment.
+                    </td>
+                </tr>
+                {% endfor %}
+                
+                <tr id="aucunResultat" style="display: none;">
+                    <td colspan="6" class="text-center py-5 text-muted">
+                        <i class="fa-solid fa-magnifying-glass-blur fa-3xl d-block mb-3 text-warning"></i>
+                        Aucun équipement ne correspond à vos critères de recherche instantanée.
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="modal fade" id="deleteConfirmationModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow rounded-4">
+            <div style="height: 6px; background: linear-gradient(90deg, #dc3545 0%, #b02a37 100%); border-radius: 4px 4px 0 0;"></div>
+            <div class="modal-body p-4 text-center">
+                <div class="d-inline-flex align-items-center justify-content-center bg-danger-subtle text-danger rounded-circle mb-3" style="width: 70px; height: 70px;">
+                    <i class="fa-solid fa-trash-can fa-2xl"></i>
+                </div>
+                <h4 class="fw-bold text-dark mb-2" id="deleteModalLabel">Confirmer la suppression</h4>
+                <p class="text-muted mb-4">
+                    Êtes-vous sûr de vouloir supprimer cet équipement ?<br>
+                    <span class="text-danger small fw-semibold"><i class="fa-solid fa-exclamation-triangle me-1"></i> Cette action est irréversible.</span>
+                </p>
+                <div class="d-flex gap-2 justify-content-center">
+                    <button type="button" class="btn btn-light border px-4 py-2.5 fw-medium rounded-3 w-50" data-bs-dismiss="modal">
+                        Annuler
+                    </button>
+                    <a href="#" id="confirmDeleteButton" class="btn btn-danger bg-gradient px-4 py-2.5 fw-medium rounded-3 w-50 shadow-sm">
+                        <i class="fa-solid fa-trash-can me-2"></i>Supprimer
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const champRecherche = document.getElementById('rechercheInstantane');
+    const selectStatut = document.getElementById('filtreStatut');
+    const selectType = document.getElementById('filtreType');
+    const btnReinitialiser = document.getElementById('btnReinitialiser');
+    const lignes = document.querySelectorAll('.ligne-equipement');
+    const aucunResultat = document.getElementById('aucunResultat');
+    const compteur = document.getElementById('compteurEquipements');
+    const ligneVide = document.getElementById('ligneVide');
+
+    // Éléments liés à la modale de suppression
+    const deleteButtons = document.querySelectorAll('.btn-delete-confirm');
+    const confirmDeleteButton = document.getElementById('confirmDeleteButton');
+
+    // Gestion dynamique de l'ouverture de la modale de suppression
+    deleteButtons.forEach(button => {
+        button.addEventListener('click', function (event) {
+            event.preventDefault(); // Bloque le lien Django immédiat
+            const deleteUrl = this.getAttribute('href');
+            if (deleteUrl) {
+                confirmDeleteButton.setAttribute('href', deleteUrl); // Transmet l'URL au bouton de validation
+                const deleteModal = new bootstrap.Modal(document.getElementById('deleteConfirmationModal'));
+                deleteModal.show(); // Ouvre la modale
+            }
+        });
+    });
+
+    function filtrerTableau() {
+        const terme = champRecherche.value.toLowerCase().trim();
+        const statutSelectionne = selectStatut.value;
+        const typeSelectionne = selectType.value.toLowerCase();
+        let compteurTrouve = 0;
+
+        lignes.forEach(ligne => {
+            const nom = ligne.getAttribute('data-nom');
+            const code = ligne.getAttribute('data-code');
+            const type = ligne.getAttribute('data-type');
+            const statut = ligne.getAttribute('data-statut');
+
+            const correspondRecherche = nom.includes(terme) || code.includes(terme) || type.includes(terme);
+            const correspondStatut = statutSelectionne === "" || statut === statutSelectionne;
+            const correspondType = typeSelectionne === "" || type === typeSelectionne;
+
+            if (correspondRecherche && correspondStatut && correspondType) {
+                ligne.style.display = '';
+                compteurTrouve++;
+            } else {
+                ligne.style.display = 'none';
+            }
+        });
+
+        if (compteurTrouve === 0 && lignes.length > 0) {
+            aucunResultat.style.display = '';
+        } else {
+            aucunResultat.style.display = 'none';
+        }
+
+        compteur.textContent = `${compteurTrouve} trouvé(s)`;
+    }
+
+    champRecherche.addEventListener('input', filtrerTableau);
+    selectStatut.addEventListener('change', filtrerTableau);
+    selectType.addEventListener('change', filtrerTableau);
+
+    btnReinitialiser.addEventListener('click', function() {
+        champRecherche.value = '';
+        selectStatut.value = '';
+        selectType.value = '';
+        
+        const zoneFiltres = document.getElementById('zoneFiltres');
+        const bsCollapse = bootstrap.Collapse.getInstance(zoneFiltres);
+        if (bsCollapse) {
+            bsCollapse.hide();
+        } else if (zoneFiltres.classList.contains('show')) {
+            new bootstrap.Collapse(zoneFiltres).hide();
+        }
+
+        filtrerTableau();
+    });
+});
+</script>
+{% endblock admin_content %}  

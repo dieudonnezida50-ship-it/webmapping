@@ -1,0 +1,190 @@
+{% extends 'admin/admin_dashboard.html' %}
+{% load static %}
+
+{% block admin_content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-4 border-bottom">
+    <div class="d-flex align-items-center">
+        <a href="{% url 'admin_dashboard' %}" class="btn btn-outline-secondary btn-sm me-3 rounded-circle shadow-sm" title="Retour au tableau de bord">
+            <i class="fa-solid fa-arrow-left"></i>
+        </a>
+        <h1 class="h2 fw-bold text-dark mb-0">
+            <i class="fa-solid fa-user-shield text-danger me-2"></i>Journal d'Audit & Sécurité
+        </h1>
+    </div>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <span class="btn btn-dark bg-gradient shadow-sm fw-medium disabled px-3">
+            <i class="fa-solid fa-shield-halved me-2 text-success"></i>
+        </span>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm rounded-3 mb-4">
+    <div class="card-body p-3 bg-white rounded-3">
+        <div class="row g-2 align-items-center">
+            <div class="col flex-grow-1">
+                <div class="input-group">
+                    <span class="input-group-text bg-light border-end-0 text-muted shadow-sm">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                    </span>
+                    <input type="text" id="rechercheInstantane" class="form-control bg-light border-start-0 ps-0 shadow-sm" placeholder="Recherche immédiate par opérateur, action (AJOUT, MODIF, SUPPR), module ou adresse IP Source...">
+                </div>
+            </div>
+            <div class="col-auto">
+                <button id="btnReinitialiser" class="btn btn-light border shadow-sm" title="Effacer la recherche">
+                    <i class="fa-solid fa-rotate-left text-secondary"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm rounded-3">
+    <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
+        <h5 class="fw-bold text-dark mb-0">
+            <i class="fa-solid fa-server text-secondary me-2"></i>Registre des transactions de la base spatiale
+        </h5>
+        <span id="compteurLogs" class="badge bg-primary px-3 py-2 rounded-pill fw-bold">
+            {{ logs_audit|length }} événement(s) loggué(s)
+        </span>
+    </div>
+    
+    <div class="table-responsive p-3">
+        <table class="table table-hover align-middle mb-0" id="tableauLogs">
+            <thead class="table-light text-secondary small text-uppercase">
+                <tr>
+                    <th style="width: 160px;">Date & Heure</th>
+                    <th style="width: 150px;">Opérateur</th>
+                    <th style="width: 120px;">Action</th>
+                    <th style="width: 140px;">Module</th>
+                    <th>Description de la transaction</th>
+                    <th style="width: 140px;">IP Source</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in logs_audit %}
+                <tr class="ligne-log" 
+                    data-operateur="{{ log.utilisateur.username|lower }}" 
+                    data-action="{{ log.action_type|lower }}"
+                    data-module="{{ log.module|lower }}"
+                    data-ip="{{ log.adresse_ip|lower }}"
+                    data-desc="{{ log.description|lower }}">
+                    
+                    <td class="text-secondary font-monospace small">
+                        {{ log.date_action|date:"d/m/Y H:i:s" }}
+                    </td>
+                    
+                    <td class="fw-semibold text-dark">
+                        <i class="fa-solid fa-circle-user text-muted me-1.5"></i>{{ log.utilisateur.username }}
+                    </td>
+                    
+                    <td>
+                        {% if log.action_type == 'AJOUT' %}
+                            <span class="badge bg-success-subtle text-success px-2.5 py-1.5 border border-success-subtle rounded-2 small fw-bold d-inline-block w-100 text-center">
+                                <i class="fa-solid fa-circle-plus me-1"></i>AJOUT
+                            </span>
+                        {% elif log.action_type == 'MODIFICATION' %}
+                            <span class="badge bg-warning-subtle text-warning px-2.5 py-1.5 border border-warning-subtle rounded-2 small fw-bold d-inline-block w-100 text-center">
+                                <i class="fa-solid fa-pen-to-square me-1"></i>MODIF
+                            </span>
+                        {% elif log.action_type == 'SUPPRESSION' %}
+                            <span class="badge bg-danger-subtle text-danger px-2.5 py-1.5 border border-danger-subtle rounded-2 small fw-bold d-inline-block w-100 text-center">
+                                <i class="fa-solid fa-trash-can me-1"></i>SUPPR
+                            </span>
+                        {% else %}
+                            <span class="badge bg-secondary-subtle text-secondary px-2.5 py-1.5 border border-secondary-subtle rounded-2 small fw-bold d-inline-block w-100 text-center">
+                                {{ log.action_type }}
+                            </span>
+                        {% endif %}
+                    </td>
+                    
+                    <td>
+                        <span class="badge bg-light text-dark border font-monospace px-2 py-1.5">
+                            {{ log.module }}
+                        </span>
+                    </td>
+                    
+                    <td class="text-dark small text-wrap" style="max-width: 300px;">
+                        {{ log.description }}
+                    </td>
+                    
+                    <td>
+                        <span class="font-monospace text-xs bg-light border px-2 py-1 rounded text-secondary">
+                            {{ log.adresse_ip }}
+                        </span>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr id="ligneVide">
+                    <td colspan="6" class="text-center py-5 text-muted">
+                        <i class="fa-solid fa-shield-halved fa-3xl d-block mb-3 text-secondary text-opacity-50"></i>
+                        Aucune donnée d'audit enregistrée dans le système.
+                    </td>
+                </tr>
+                {% endfor %}
+                
+                <tr id="aucunResultat" style="display: none;">
+                    <td colspan="6" class="text-center py-5 text-muted">
+                        <i class="fa-solid fa-magnifying-glass-blur fa-3xl d-block mb-3 text-warning"></i>
+                        Aucun log de sécurité ne correspond à vos critères de recherche filtrée.
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const champRecherche = document.getElementById('rechercheInstantane');
+    const btnReinitialiser = document.getElementById('btnReinitialiser');
+    const lignes = document.querySelectorAll('.ligne-log');
+    const aucunResultat = document.getElementById('aucunResultat');
+    const compteur = document.getElementById('compteurLogs');
+
+    function filtrerLogs() {
+        const terme = champRecherche.value.toLowerCase().trim();
+        let compteurTrouve = 0;
+
+        lignes.forEach(ligne => {
+            const operateur = ligne.getAttribute('data-operateur');
+            const action = ligne.getAttribute('data-action');
+            const module = ligne.getAttribute('data-module');
+            const ip = ligne.getAttribute('data-ip');
+            const desc = ligne.getAttribute('data-desc');
+
+            // Le filtre inspecte tous les champs cruciaux de la ligne
+            const correspondRecherche = 
+                operateur.includes(terme) || 
+                action.includes(terme) || 
+                module.includes(terme) || 
+                ip.includes(terme) ||
+                desc.includes(terme);
+
+            if (correspondRecherche) {
+                ligne.style.display = '';
+                compteurTrouve++;
+            } else {
+                ligne.style.display = 'none';
+            }
+        });
+
+        // Gestion de l'état vide
+        if (compteurTrouve === 0 && lignes.length > 0) {
+            aucunResultat.style.display = '';
+        } else {
+            aucunResultat.style.display = 'none';
+        }
+
+        compteur.textContent = `${compteurTrouve} événement(s) trouvé(s)`;
+    }
+
+    // Événements d'écouteurs
+    champRecherche.addEventListener('input', filtrerLogs);
+
+    btnReinitialiser.addEventListener('click', function() {
+        champRecherche.value = '';
+        filtrerLogs();
+    });
+});
+</script>
+{% endblock admin_content %}

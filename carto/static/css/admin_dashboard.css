@@ -1,0 +1,252 @@
+/* ==========================================================================
+   GLOBAL & POLICES
+   ========================================================================== */
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: #f4f6f9;
+}
+
+/* ==========================================================================
+   SIDEBAR AMÉLIORÉE (Contraste Élevé & Lisibilité)
+   ========================================================================== */
+.sidebar-admin {
+    background: #111418 !important; /* Un noir plus profond pour faire ressortir les éléments */
+    border-right: 1px solid #232931;
+}
+
+.brand-title {
+    color: #00e676 !important; /* Vert néon haute visibilité pour le SIG */
+    text-shadow: 0 0 10px rgba(0, 230, 118, 0.2);
+}
+
+/* Titres des sections dans le menu */
+.menu-section-title {
+    color: #f8f9fa !important; /* Blanc cassé pour être parfaitement lisible */
+    font-size: 0.8rem;
+    font-weight: 700 !important;
+    border-left: 3px solid #1abc9c;
+    padding-left: 8px;
+    margin-top: 1.5rem;
+}
+
+/* Liens de la Sidebar */
+.sidebar-menu .nav-link {
+    color: #e2e8f0 !important; /* Blanc/Gris clair pour un contraste optimal */
+    font-weight: 500;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+}
+
+/* Icônes de la Sidebar : Forcer une opacité à 100% et des couleurs distinctes */
+.sidebar-menu .nav-link i {
+    font-size: 1.1rem;
+    opacity: 1 !important;
+    width: 25px;
+}
+
+/* Effet de survol (Hover) dynamique sur la Sidebar */
+.sidebar-menu .nav-link:hover {
+    color: #ffffff !important;
+    background: rgba(255, 255, 255, 0.1) !important;
+    transform: translateX(5px); /* Légère translation vers la droite */
+}
+
+/* État actif */
+.sidebar-menu .nav-link.active {
+    background: linear-gradient(45deg, #3498db, #2980b9) !important;
+    box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+}
+
+/* ==========================================================================
+   CARTES STATISTIQUES LOGICIELLES (Stylisées & Animées)
+   ========================================================================== */
+.dash-card {
+    border: none !important;
+    border-radius: 16px !important;
+    overflow: hidden;
+    position: relative;
+    transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+    background: #ffffff;
+}
+
+/* Effet au survol des cartes : Soulèvement et Ombre portée 3D */
+.dash-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.12) !important;
+}
+
+/* Décoration d'arrière-plan des cartes (Cercles subtils en surimpression) */
+.dash-card::before {
+    content: "";
+    position: absolute;
+    width: 130px;
+    height: 130px;
+    border-radius: 50%;
+    top: -40px;
+    right: -40px;
+    opacity: 0.05;
+    transition: all 0.4s ease;
+}
+
+.dash-card:hover::before {
+    transform: scale(1.2);
+    opacity: 0.08;
+}
+
+/* Styles spécifiques par type de carte */
+.card-infra::before { background: #2c3e50; }
+.card-ok::before { background: #2ecc71; }
+.card-warning::before { background: #f39c12; }
+.card-danger::before { background: #e74c3c; }
+
+/* Conteneurs d'icônes ronds et dynamiques */
+.icon-shape {
+    width: 55px;
+    height: 55px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    transition: all 0.4s ease;
+}
+
+/* Animation de l'icône au survol de la carte (effet de pulsation) */
+.dash-card:hover .icon-shape {
+    transform: scale(1.1) rotate(5deg);
+}
+
+/* Typographies à l'intérieur des cartes */
+.card-number {
+    font-size: 2.2rem;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.card-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-autospace: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* ==========================================
+   AJUSTEMENTS ET CORRECTIONS DE LA SIDEBAR
+   ========================================== */
+
+/* Couleur du logo Commune SIG */
+.sidebar-admin .logo-sig {
+    color: #3498db;
+}
+
+/* Badge Espace Administration (Correction du Contraste Élevé) */
+.sidebar-admin .admin-badge {
+    color: rgba(255, 255, 255, 0.85) !important;
+    background: rgba(255, 255, 255, 0.12);
+    font-size: 0.72rem;
+    letter-spacing: 0.5px;
+}
+
+/* Titres de navigation (ex: Données Métiers) */
+.sidebar-admin .menu-section-title {
+    color: #3498db !important;
+    font-size: 0.72rem;
+    letter-spacing: 1px;
+}
+
+/* Liens de la sidebar */
+.sidebar-admin .nav-link {
+    color: rgba(255, 255, 255, 0.75) !important;
+    transition: all 0.2s ease-in-out;
+}
+
+/* Effet au survol des liens */
+.sidebar-admin .nav-link:hover {
+    color: #ffffff !important;
+    background-color: rgba(255, 255, 255, 0.08);
+}
+
+/* Lien actif */
+.sidebar-admin .nav-link.active {
+    background: linear-gradient(45deg, #3498db, #2980b9) !important;
+    color: #ffffff !important;
+    font-weight: 500;
+}
+
+/* Couleur de l'icône Secteur */
+.sidebar-admin .icon-secteur {
+    color: #3498db;
+}
+
+/* Pied de page de la sidebar (Correction Admin Zida) */
+.sidebar-admin .sidebar-footer {
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.sidebar-admin .avatar-admin {
+    width: 35px; 
+    height: 35px; 
+    min-width: 35px; 
+    font-size: 0.9rem;
+}
+
+.sidebar-admin .label-admin {
+    letter-spacing: 0.3px;
+}
+
+.sidebar-admin .online-badge {
+    font-size: 0.7rem; 
+    font-weight: 600;
+}
+
+.sidebar-admin .online-badge i {
+    font-size: 0.5rem;
+}
+
+
+/* ==========================================
+   BORDURES DES CARTES INDICATRICES 
+   ========================================== */
+.card-infra {
+    border-left: 5px solid #2c3e50 !important;
+}
+
+.card-ok {
+    border-left: 5px solid #2ecc71 !important;
+}
+
+.card-warning {
+    border-left: 5px solid #f39c12 !important;
+}
+
+.card-danger {
+    border-left: 5px solid #e74c3c !important;
+}
+/* Alignement parfait de la colonne catégorie dans le tableau */
+.cell-categorie {
+    display: flex;
+    align-items: center;
+    border-bottom: none !important; /* Garde la structure de la ligne Bootstrap native */
+    height: 100%;
+}
+
+.table-icon {
+    width: 20px;
+    text-align: center;
+}
+
+/* Ajustements pour le filtre dynamique intégré */
+.ligne-equipement:hover {
+    background-color: rgba(0, 0, 0, 0.02) !important;
+    transition: background-color 0.2s ease;
+}
+
+#champRecherche:focus {
+    background-color: #ffffff !important;
+    border-color: #0d6efd !important;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15) !important;
+}
+
+#zoneFiltres {
+    transition: all 0.3s ease-in-out;
+}

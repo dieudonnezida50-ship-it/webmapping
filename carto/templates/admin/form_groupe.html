@@ -1,0 +1,347 @@
+{% extends 'admin/admin_dashboard.html' %}
+
+{% block admin_content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-4 border-bottom">
+    <div class="d-flex align-items-center">
+        <a href="{% url 'liste_equipements' %}" class="btn btn-outline-secondary btn-sm me-3 rounded-circle shadow-sm" style="width: 35px; height: 35px; display: flex; align-items: center; justify-content: center;" title="Retour au registre">
+            <i class="fa-solid fa-arrow-left"></i>
+        </a>
+        <h1 class="h2 fw-bold text-dark mb-0">
+            <i class="fa-solid fa-screwdriver-wrench me-2 text-primary"></i>
+            {% if form.instance.pk %}Modifier l'Équipement{% else %}Saisir un Nouvel Équipement{% endif %}
+        </h1>
+    </div>
+</div>
+
+<div class="container-fluid p-0">
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show shadow-sm border-0 rounded-3 mb-4" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <form method="POST" action="" id="equipementForm">
+        {% csrf_token %}
+        
+        <div class="row g-4">
+            
+            <div class="col-lg-5">
+                
+                <div class="card shadow-sm border-0 rounded-3 mb-4">
+                    <div class="card-header bg-white border-0 py-3">
+                        <h5 class="mb-0 fw-bold text-dark">
+                            <i class="fa-solid fa-list-check me-2 text-primary"></i>Caractéristiques Générales
+                        </h5>
+                    </div>
+                    <div class="card-body p-4 pt-1">
+                        {% for field in form %}
+                            <div class="form-group mb-3">
+                                <label class="form-label fw-semibold text-secondary small text-uppercase mb-1">{{ field.label }}</label>
+                                {{ field }}
+                                
+                                {% if field.help_text %}
+                                    <div class="form-text text-muted small" style="font-size: 0.75rem;">{{ field.help_text }}</div>
+                                {% endif %}
+                                
+                                {% if field.errors %}
+                                    <div class="text-danger small mt-1" style="font-size: 0.8rem;">{{ field.errors }}</div>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="card shadow-sm border-0 rounded-3 mb-4 d-none" id="card-details-metiers">
+                    <div class="card-header bg-light border-0 py-3">
+                        <h5 class="mb-0 fw-bold text-dark">
+                            <i class="fa-solid fa-tags me-2 text-success"></i>Spécifications du Type
+                        </h5>
+                    </div>
+                    <div class="card-body p-4">
+                        
+                        <div class="bloc-metier d-none" id="bloc-ecole">
+                            <h6 class="text-primary border-bottom pb-2 mb-3 fw-bold"><i class="fa-solid fa-graduation-cap me-2"></i>Détails de l'Établissement Scolaire</h6>
+                            <div class="mb-3">{{ details_form.nombre_classes.label_tag }}{{ details_form.nombre_classes }}</div>
+                            <div class="mb-3">{{ details_form.nombre_eleves.label_tag }}{{ details_form.nombre_eleves }}</div>
+                            <div class="mb-3">{{ details_form.nombre_enseignants.label_tag }}{{ details_form.nombre_enseignants }}</div>
+                            <div class="mb-3">{{ details_form.cycle_enseignement.label_tag }}{{ details_form.cycle_enseignement }}</div>
+                            <div class="mb-3">{{ details_form.nom_directeur.label_tag }}{{ details_form.nom_directeur }}</div>
+                            <div class="form-check form-switch mb-3">
+                                {{ details_form.presence_cantine }}
+                                <label class="form-check-label fw-semibold text-secondary ms-2" for="{{ details_form.presence_cantine.id_for_label }}">{{ details_form.presence_cantine.label }}</label>
+                            </div>
+                        </div>
+
+                        <div class="bloc-metier d-none" id="bloc-sante">
+                            <h6 class="text-primary border-bottom pb-2 mb-3 fw-bold"><i class="fa-solid fa-house-medical me-2"></i>Détails du Centre de Santé</h6>
+                            <div class="mb-3">{{ details_form.type_centre.label_tag }}{{ details_form.type_centre }}</div>
+                            <div class="mb-3">{{ details_form.capacite_lits.label_tag }}{{ details_form.capacite_lits }}</div>
+                            <div class="mb-3">{{ details_form.personnel_medical_count.label_tag }}{{ details_form.personnel_medical_count }}</div>
+                            <div class="form-check form-switch mb-3">
+                                {{ details_form.presence_maternite }}
+                                <label class="form-check-label fw-semibold text-secondary ms-2" for="{{ details_form.presence_maternite.id_for_label }}">{{ details_form.presence_maternite.label }}</label>
+                            </div>
+                            <div class="form-check form-switch mb-3">
+                                {{ details_form.ambulance_fonctionnelle }}
+                                <label class="form-check-label fw-semibold text-secondary ms-2" for="{{ details_form.ambulance_fonctionnelle.id_for_label }}">{{ details_form.ambulance_fonctionnelle.label }}</label>
+                            </div>
+                        </div>
+
+                        <div class="bloc-metier d-none" id="bloc-forage">
+                            <h6 class="text-primary border-bottom pb-2 mb-3 fw-bold"><i class="fa-solid fa-faucet-drip me-2"></i>Détails du Point d'Eau / Forage</h6>
+                            <div class="mb-3">{{ details_form.type_pompe.label_tag }}{{ details_form.type_pompe }}</div>
+                            <div class="mb-3">{{ details_form.profondeur.label_tag }}{{ details_form.profondeur }}</div>
+                            <div class="mb-3">{{ details_form.debit.label_tag }}{{ details_form.debit }}</div>
+                            <div class="mb-3{{ details_form.population_desservie.id_for_label }}">{{ details_form.population_desservie.label_tag }}{{ details_form.population_desservie }}</div>
+                            <div class="mb-3">{{ details_form.mode_gestion.label_tag }}{{ details_form.mode_gestion }}</div>
+                        </div>
+
+                        <div class="bloc-metier d-none" id="bloc-marche">
+                            <h6 class="text-primary border-bottom pb-2 mb-3 fw-bold"><i class="fa-solid fa-shop me-2"></i>Détails de l'Infrastructure du Marché</h6>
+                            <div class="mb-3">{{ details_form.nombre_boutiques.label_tag }}{{ details_form.nombre_boutiques }}</div>
+                            <div class="mb-3">{{ details_form.superficie.label_tag }}{{ details_form.superficie }}</div>
+                            <div class="mb-3">{{ details_form.frequence_marche.label_tag }}{{ details_form.frequence_marche }}</div>
+                            <div class="form-check form-switch mb-3">
+                                {{ details_form.cloture }}
+                                <label class="form-check-label fw-semibold text-secondary ms-2" for="{{ details_form.cloture.id_for_label }}">{{ details_form.cloture.label }}</label>
+                            </div>
+                        </div>
+
+                        <div class="bloc-metier d-none" id="bloc-administration">
+                            <h6 class="text-primary border-bottom pb-2 mb-3 fw-bold"><i class="fa-solid fa-building-government me-2"></i>Détails du Bâtiment Administratif</h6>
+                            <div class="mb-3">{{ details_form.type_administration.label_tag }}{{ details_form.type_administration }}</div>
+                            <div class="mb-3">{{ details_form.nombre_bureaux.label_tag }}{{ details_form.nombre_bureaux }}</div>
+                            <div class="form-check form-switch mb-3">
+                                {{ details_form.salle_reunion }}
+                                <label class="form-check-label fw-semibold text-secondary ms-2" for="{{ details_form.salle_reunion.id_for_label }}">{{ details_form.salle_reunion.label }}</label>
+                            </div>
+                            <div class="form-check form-switch mb-3">
+                                {{ details_form.accessible_public }}
+                                <label class="form-check-label fw-semibold text-secondary ms-2" for="{{ details_form.accessible_public.id_for_label }}">{{ details_form.accessible_public.label }}</label>
+                            </div>
+                        </div>
+
+                        <div class="bloc-metier d-none" id="bloc-assainissement">
+                            <h6 class="text-primary border-bottom pb-2 mb-3 fw-bold"><i class="fa-solid fa-droplet-slash me-2"></i>Détails de l'Ouvrage d'Assainissement</h6>
+                            <div class="mb-3">{{ details_form.type_ouvrage.label_tag }}{{ details_form.type_ouvrage }}</div>
+                            <div class="mb-3">{{ details_form.longueur_reseau.label_tag }}{{ details_form.longueur_reseau }}</div>
+                            <div class="mb-3">{{ details_form.dimension_capacite.label_tag }}{{ details_form.dimension_capacite }}</div>
+                            <div class="mb-3">{{ details_form.nature_reseau.label_tag }}{{ details_form.nature_reseau }}</div>
+                        </div>
+
+                        <div class="bloc-metier d-none" id="bloc-sport">
+                            <h6 class="text-primary border-bottom pb-2 mb-3 fw-bold"><i class="fa-solid fa-football me-2"></i>Détails de l'Infrastructure Sportive</h6>
+                            <div class="mb-3">{{ details_form.nature_sport.label_tag }}{{ details_form.nature_sport }}</div>
+                            <div class="mb-3{{ details_form.nature_revetement.id_for_label }}">{{ details_form.nature_revetement.label_tag }}{{ details_form.nature_revetement }}</div>
+                            <div class="mb-3">{{ details_form.capacite_places.label_tag }}{{ details_form.capacite_places }}</div>
+                            <div class="form-check form-switch mb-3">
+                                {{ details_form.presence_eclairage }}
+                                <label class="form-check-label fw-semibold text-secondary ms-2" for="{{ details_form.presence_eclairage.id_for_label }}">{{ details_form.presence_eclairage.label }}</label>
+                            </div>
+                        </div>
+
+                        <div class="bloc-metier d-none" id="bloc-eclairage">
+                            <h6 class="text-primary border-bottom pb-2 mb-3 fw-bold"><i class="fa-solid fa-lightbulb me-2"></i>Détails de l'Éclairage Public</h6>
+                            <div class="mb-3">{{ details_form.type_technologie.label_tag }}{{ details_form.type_technologie }}</div>
+                            <div class="mb-3">{{ details_form.nombre_foyers.label_tag }}{{ details_form.nombre_foyers }}</div>
+                            <div class="mb-3">{{ details_form.puissance_lampe.label_tag }}{{ details_form.puissance_lampe }}</div>
+                            <div class="mb-3">{{ details_form.hauteur_poteau.label_tag }}{{ details_form.hauteur_poteau }}</div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <button type="submit" class="btn btn-primary bg-gradient w-100 py-3 shadow-sm fw-bold rounded-3 fs-5">
+                        <i class="fa-solid fa-floppy-disk me-2"></i>Enregistrer l'Infrastructure
+                    </button>
+                </div>
+
+            </div>
+
+            <div class="col-lg-7">
+                <div class="card shadow-sm border-0 rounded-3 h-100" style="min-height: 650px;">
+                    <div class="card-header bg-white border-0 py-3 d-flex align-items-center justify-content-between">
+                        <h5 class="mb-0 fw-bold text-dark">
+                            <i class="fa-solid fa-map-location-dot me-2 text-secondary"></i>Localisation Géospatiale
+                        </h5>
+                        <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 rounded-pill fw-semibold small">Mode Saisie Point unique</span>
+                    </div>
+                    <div class="card-body p-0 position-relative flex-grow-1" style="min-height: 550px;">
+                        <div id="map" style="position: absolute; top:0; bottom:0; left:0; right:0; height:100%; width:100%; border-radius: 0 0 12px 12px; z-index: 1;"></div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </form>
+</div>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+    // =====================================================================
+    // 1. LOGIQUE DE NAVIGATION ET GESTION GÉOSPATIALE (CARTE LEAFLET)
+    // =====================================================================
+    var map = L.map('map').setView([12.37, -1.52], 12); 
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    var marker = null;
+    var secteurLayer = null; 
+    var equipementsExistantsLayer = L.layerGroup().addTo(map);
+
+    var localisationInput = document.getElementById('id_localisation') || document.querySelector('input[name="localisation"]');
+    var secteurSelect = document.getElementById('id_secteur') || document.querySelector('select[name="secteur"]'); 
+    var typeEquipementSelect = document.getElementById('id_type_equipement') || document.querySelector('select[name="type_equipement"]');
+
+    function updateLocalisationField(lat, lng) {
+        if (localisationInput) {
+            localisationInput.value = "POINT(" + lng.toFixed(6) + " " + lat.toFixed(6) + ")";
+        }
+    }
+
+    // Gestion de l'affichage d'un point lors d'une modification (Update)
+    if (localisationInput && localisationInput.value) {
+        var wkt = localisationInput.value;
+        var match = wkt.match(/POINT\s*\(\s*([-\d.]+)\s+([-\d.]+)\s*\)/i);
+        if (match) {
+            var lngExisting = parseFloat(match[1]);
+            var latExisting = parseFloat(match[2]);
+            marker = L.marker([latExisting, lngExisting], {draggable: true}).addTo(map);
+            map.setView([latExisting, lngExisting], 15);
+            marker.on('dragend', function() {
+                var pos = marker.getLatLng();
+                updateLocalisationField(pos.lat, pos.lng);
+            });
+        }
+    }
+
+    function focusOnSelectedSecteur() {
+        if (!secteurSelect || !secteurSelect.value) return;
+        var secteurId = secteurSelect.value;
+        
+        fetch('/api/secteurs/' + secteurId + '/')
+            .then(response => response.json())
+            .then(data => {
+                if (secteurLayer) map.removeLayer(secteurLayer);
+                secteurLayer = L.geoJSON(data, {
+                    style: { color: '#244197', weight: 3, fillColor: '#244197', fillOpacity: 0.12 }
+                }).addTo(map);
+                map.fitBounds(secteurLayer.getBounds(), { padding: [30, 30] });
+            });
+
+        fetch('/api/equipements-secteur/?secteur=' + secteurId)
+            .then(response => response.json())
+            .then(data => {
+                equipementsExistantsLayer.clearLayers();
+                var greyIcon = L.icon({
+                    iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-grey.png',
+                    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+                    iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]
+                });
+
+                if (Array.isArray(data)) {
+                    data.forEach(function(item) {
+                        if (item.lat && item.lng) {
+                            L.marker([item.lat, item.lng], {icon: greyIcon})
+                             .bindPopup("<b>" + (item.nom || "Équipement") + "</b>")
+                             .addTo(equipementsExistantsLayer);
+                        }
+                    });
+                } else if (data.type === "FeatureCollection") {
+                    L.geoJSON(data, {
+                        pointToLayer: function (feature, latlng) {
+                            return L.marker(latlng, {icon: greyIcon}).bindPopup("<b>" + (feature.properties.nom || "Équipement") + "</b>");
+                        }
+                    }).addTo(equipementsExistantsLayer);
+                }
+            })
+            .catch(err => console.error("Erreur chargement équipements:", err));
+    }
+
+    if (secteurSelect) {
+        secteurSelect.addEventListener('change', focusOnSelectedSecteur);
+        if(secteurSelect.value) setTimeout(focusOnSelectedSecteur, 300);
+    }
+
+    map.on('click', function(e) {
+        if (marker) {
+            marker.setLatLng(e.latlng);
+        } else {
+            marker = L.marker(e.latlng, {draggable: true}).addTo(map);
+            marker.on('dragend', function() {
+                var pos = marker.getLatLng();
+                updateLocalisationField(pos.lat, pos.lng);
+            });
+        }
+        updateLocalisationField(e.latlng.lat, e.latlng.lng);
+    });
+
+    setTimeout(function(){ map.invalidateSize(); }, 200);
+
+    // =====================================================================
+    // 2. SCRIPT DE CONTRÔLE ET PILOTAGE DYNAMIQUE DES FORMULAIRES MÉTIERS
+    // =====================================================================
+    function gererAffichageFormulairesMetiers() {
+        var cardMetiers = document.getElementById('card-details-metiers');
+        
+        // Masquer par défaut tous les blocs métiers internes
+        var blocs = document.querySelectorAll('.bloc-metier');
+        blocs.forEach(function(b) {
+            b.classList.add('d-none');
+        });
+
+        if (!typeEquipementSelect || !typeEquipementSelect.value) {
+            cardMetiers.classList.add('d-none');
+            return;
+        }
+
+        // Récupération du texte sélectionné (ex: "Écoles", "Forages", etc.)
+        var texteSelectionne = typeEquipementSelect.options[typeEquipementSelect.selectedIndex].text.toLowerCase();
+        var blocAafficher = null;
+
+        // Analyse par mot-clé pour cibler le bon bloc
+        if (texteSelectionne.includes('école') || texteSelectionne.includes('scolaire') || texteSelectionne.includes('enseign')) {
+            blocAafficher = document.getElementById('bloc-ecole');
+        } else if (texteSelectionne.includes('santé') || texteSelectionne.includes('medic') || texteSelectionne.includes('hopital') || texteSelectionne.includes('centre de san')) {
+            blocAafficher = document.getElementById('bloc-sante');
+        } else if (texteSelectionne.includes('forage') || texteSelectionne.includes('eau') || texteSelectionne.includes('puits')) {
+            blocAafficher = document.getElementById('bloc-forage');
+        } else if (texteSelectionne.includes('marché') || texteSelectionne.includes('boutique')) {
+            blocAafficher = document.getElementById('bloc-marche');
+        } else if (texteSelectionne.includes('admin') || texteSelectionne.includes('mairie') || texteSelectionne.includes('bâtiment')) {
+            blocAafficher = document.getElementById('bloc-administration');
+        } else if (texteSelectionne.includes('assainissement') || texteSelectionne.includes('canaux') || texteSelectionne.includes('ouvrage')) {
+            blocAafficher = document.getElementById('bloc-assainissement');
+        } else if (texteSelectionne.includes('sport') || texteSelectionne.includes('terrain') || texteSelectionne.includes('stade')) {
+            blocAafficher = document.getElementById('bloc-sport');
+        } else if (texteSelectionne.includes('éclairage') || texteSelectionne.includes('solaire') || texteSelectionne.includes('lampe')) {
+            blocAafficher = document.getElementById('bloc-eclairage');
+        }
+
+        // Si un bloc correspond, on affiche la carte et le conteneur concerné
+        if (blocAafficher) {
+            cardMetiers.classList.remove('d-none');
+            blocAafficher.classList.remove('d-none');
+        } else {
+            cardMetiers.classList.add('d-none');
+        }
+    }
+
+    // Écouteur sur le changement de type d'équipement
+    if (typeEquipementSelect) {
+        typeEquipementSelect.addEventListener('change', gererAffichageFormulairesMetiers);
+        // Exécution immédiate au chargement pour la prise en charge du mode Modification (Update)
+        document.addEventListener("DOMContentLoaded", function() {
+            setTimeout(gererAffichageFormulairesMetiers, 150);
+        });
+    }
+</script>
+{% endblock admin_content %}

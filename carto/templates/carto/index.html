@@ -1,0 +1,148 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIG - Gestion des Équipements Communaux</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}" />
+
+    <style>
+        .dash-card {
+            transition: transform 0.25s ease-in-out, box-shadow 0.25s ease-in-out;
+            cursor: pointer;
+        }
+        .dash-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.1) !important;
+        }
+        .filter-card {
+            transition: all 0.25s ease;
+        }
+        .filter-card:hover {
+            transform: translateY(-2px);
+        }
+        /* Style des popups professionnelles */
+        .leaflet-popup-content-wrapper {
+            padding: 0 !important;
+            overflow: hidden;
+            border-radius: 12px !important;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15) !important;
+        }
+        .leaflet-popup-content {
+            margin: 0 !important;
+            width: 300px !important;
+        }
+        .popup-table {
+            width: 100%;
+            margin-bottom: 0;
+            font-size: 12.5px;
+        }
+        .popup-table td {
+            padding: 6px 10px;
+            border-bottom: 1px solid #f1f2f6;
+        }
+        .popup-table tr:last-child td {
+            border-bottom: none;
+        }
+    </style>
+</head>
+<body>
+
+    <nav id="navbar-sig" class="navbar navbar-expand-lg navbar-dark shadow-sm px-4">
+        <a class="navbar-brand d-flex align-items-center" href="#">
+            <i class="fa-solid fa-map-location-dot me-3 fa-lg" style="color: #1abc9c;"></i>
+            <div>
+                <span class="fw-bold d-block" style="letter-spacing: 0.5px;">GeoCommune</span>
+                <small class="text-white-50 fw-light" style="font-size: 11px;">Système d'Information Géographique Communal</small>
+            </div>
+        </a>
+    </nav>
+
+    <div id="main-container">
+        
+        <div id="sidebar">
+            <div class="d-flex align-items-center justify-content-between mb-4 pb-2 border-bottom">
+                <h5 class="fw-bold text-dark m-0" style="letter-spacing: -0.3px;">Tableau de bord</h5>
+                <span class="badge bg-light text-secondary border px-2.5 py-1.5 font-monospace" style="font-size: 11px;"></span>
+            </div>
+
+            <div class="row g-2 mb-4">
+                <div class="col-6">
+                    <div class="card dash-card border-0 bg-primary bg-gradient text-white text-center p-3 shadow-sm h-100">
+                        <div class="small opacity-75 mb-1 fw-medium">Infrastructures</div>
+                        <h3 id="dash-total" class="fw-bold m-0">0</h3>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="card dash-card border-0 bg-success bg-gradient text-white text-center p-3 shadow-sm h-100">
+                        <div class="small opacity-75 mb-1 fw-medium">Opérationnels</div>
+                        <h3 id="dash-operationnel" class="fw-bold m-0">0</h3>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="card dash-card border-0 bg-danger bg-gradient text-white text-center p-3 shadow-sm h-100">
+                        <div class="small opacity-75 mb-1 fw-medium">En Panne</div>
+                        <h3 id="dash-panne" class="fw-bold m-0">0</h3>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="card dash-card border-0 bg-warning bg-gradient text-dark text-center p-3 shadow-sm h-100">
+                        <div class="small opacity-75 mb-1 fw-medium">En Maintenance</div>
+                        <h3 id="dash-maintenance" class="fw-bold m-0">0</h3>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex align-items-center justify-content-between mb-2">
+                <div class="fw-bold text-secondary text-uppercase" style="font-size: 11px; letter-spacing: 0.5px;">Filtres de recherche</div>
+                <button id="btn-reset" class="btn btn-link btn-sm text-decoration-none p-0 fw-semibold text-primary" style="font-size: 11px;">
+                    <i class="fa-solid fa-rotate-left me-1"></i>Réinitialiser
+                </button>
+            </div>
+
+            <div class="input-group mb-3 shadow-sm">
+                <span class="input-group-text bg-white border-end-0 border-2 text-muted"><i class="fa-solid fa-magnifying-glass"></i></span>
+                <input type="text" id="search-equipement" class="form-control border-start-0 border-2 ps-1" placeholder="Rechercher par nom, code...">
+            </div>
+
+            <div class="card border-0 shadow-sm mb-2 p-2.5 filter-card" style="border-left: 4px solid #e67e22 !important;">
+                <label class="form-label fw-semibold text-dark small mb-1.5"><i class="fa-solid fa-layer-group me-2" style="color: #e67e22;"></i>Catégorie d'équipement</label>
+                <select id="select-type" class="form-select form-select-sm border-0 bg-light">
+                    <option value="tous">Tous les types</option>
+                </select>
+            </div>
+
+            <div class="card border-0 shadow-sm mb-2 p-2.5 filter-card" style="border-left: 4px solid #1abc9c !important;">
+                <label class="form-label fw-semibold text-dark small mb-1.5"><i class="fa-solid fa-map-pin me-2" style="color: #1abc9c;"></i>Secteur / Zone administrative</label>
+                <select id="select-secteur" class="form-select form-select-sm border-0 bg-light">
+                    <option value="tous">Tous les secteurs</option>
+                </select>
+            </div>
+            
+            <div class="card border-0 shadow-sm mb-3 p-2.5 filter-card" style="border-left: 4px solid #3498db !important;">
+                <label class="form-label fw-semibold text-dark small mb-1.5"><i class="fa-solid fa-circle-check me-2" style="color: #3498db;"></i>État de fonctionnement</label>
+                <select id="select-statut" class="form-select form-select-sm border-0 bg-light">
+                    <option value="tous">Tous les états</option>
+                </select>
+            </div>
+
+            <div class="alert alert-info border-0 small shadow-sm mt-auto mb-0" role="alert" style="background-color: #eaf2f8; color: #2980b9;">
+                <i class="fa-solid fa-circle-info me-2"></i>
+                Les critères se recoupent automatiquement à chaque sélection.
+            </div>
+        </div>
+
+        <div id="map"></div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{% static 'js/map.js' %}"></script>
+</body>
+</html>

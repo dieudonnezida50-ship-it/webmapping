@@ -1,0 +1,289 @@
+{% extends 'admin/admin_dashboard.html' %}
+{% load static %}
+
+{% block admin_content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-4 border-bottom">
+    <div class="d-flex align-items-center">
+        <a href="{% url 'liste_secteurs' %}" class="btn btn-outline-secondary btn-sm me-3 rounded-circle shadow-sm" title="Retour au registre">
+            <i class="fa-solid fa-arrow-left"></i>
+        </a>
+        <h1 class="h2 fw-bold text-dark mb-0">
+            <i class="fa-solid fa-draw-polygon me-2 text-primary"></i>
+            {% if form.instance.pk %}Modifier le Secteur{% else %}Ajouter un Secteur / Quartier{% endif %}
+        </h1>
+    </div>
+</div>
+
+<div class="container-fluid p-0">
+    {% if form.errors or messages %}
+        <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm rounded-3 mb-4" role="alert">
+            <div class="fw-bold mb-2 text-danger">
+                <i class="fa-solid fa-circle-exclamation me-2"></i>Impossible d'enregistrer le secteur
+            </div>
+            <ul class="mb-0 small ps-3 text-secondary">
+                {% if form.geom.errors or form.errors.geom %}
+                    <li><strong>Géométrie spatiale manquante :</strong> Vous devez impérativement délimiter les contours du secteur sur la carte à l'aide de l'outil polygone.</li>
+                {% endif %}
+                {% for field in form %}
+                    {% if field.name != 'geom' %}
+                        {% for error in field.errors %}
+                            <li><strong>{{ field.label }} :</strong> {{ error }}</li>
+                        {% endfor %}
+                    {% endif %}
+                {% endfor %}
+                {% for message in messages %}
+                    <li>{{ message }}</li>
+                {% endfor %}
+            </ul>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    {% endif %}
+
+    <div class="row g-4">
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm rounded-3 h-100">
+                <div class="card-header bg-white py-3 border-bottom-0">
+                    <h5 class="fw-bold text-dark mb-0">
+                        <i class="fa-solid fa-pen text-secondary me-2"></i>Données Littérales
+                    </h5>
+                </div>
+                <div class="card-body pt-2">
+                    <form method="POST" id="secteurForm">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold text-secondary small text-uppercase mb-1">Nom du Secteur / Quartier</label>
+                            {{ form.nom }}
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold text-secondary small text-uppercase mb-1">Commune de Rattachement</label>
+                            {{ form.commune }}
+                            <div class="form-text text-primary small mt-2">
+                                <i class="fa-solid fa-circle-info me-1"></i> Sélectionner une commune charge automatiquement ses limites géographiques en arrière-plan pour guider votre tracé.
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold text-secondary small text-uppercase mb-1"><i class="fa-solid fa-location-dot me-1 text-info"></i>Latitude du centre</label>
+                            {{ form.latitude }}
+                            <small class="form-text text-muted d-block mt-1">Saisissez manuellement ou chargez depuis un fichier</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold text-secondary small text-uppercase mb-1"><i class="fa-solid fa-location-dot me-1 text-info"></i>Longitude du centre</label>
+                            {{ form.longitude }}
+                            <small class="form-text text-muted d-block mt-1">Saisissez manuellement ou chargez depuis un fichier</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold text-secondary small text-uppercase mb-1"><i class="fa-solid fa-file-import me-1 text-success"></i>Importer depuis un fichier</label>
+                            {{ form.fichier_import }}
+                            <small class="form-text text-muted d-block mt-1">Formats acceptés : CSV (avec colonnes latitude/longitude) ou GeoJSON</small>
+                        </div>
+
+                        <input type="hidden" name="geom" id="geom_wkt" value="{{ geom_wkt|default:'' }}">
+                        <input type="hidden" name="Geom" id="geom_wkt_maj" value="{{ geom_wkt|default:'' }}">
+
+                        <div class="mt-4 pt-3 border-top">
+                            <button type="submit" class="btn btn-primary bg-gradient w-100 py-2.5 shadow-sm fw-medium rounded-3">
+                                <i class="fa-solid fa-floppy-disk me-2"></i>Enregistrer le Territoire
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm rounded-3 h-100">
+                <div class="card-header bg-white py-3 border-bottom-0 d-flex justify-content-between align-items-center">
+                    <h5 class="fw-bold text-dark mb-0">
+                        <i class="fa-solid fa-map-location-dot text-secondary me-2"></i>Numérisation des Frontières SGE
+                    </h5>
+                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-2 rounded-pill fw-semibold small">Mode Polygone Unique</span>
+                </div>
+                <div class="card-body p-0 rounded-bottom-3" style="min-height: 550px; position: relative;">
+                    <div id="map" style="position: absolute; top:0; bottom:0; left:0; right:0; height:100%; width:100%; border-radius: 0 0 12px 12px;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css" />
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/wicket/1.3.8/wicket.min.js"></script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const nomField = document.querySelector('input[name="nom"]') || document.querySelector('[id*="id_nom"]');
+        const communeField = document.getElementById('id_commune_select') || document.querySelector('select[name="commune"]');
+        
+        if(nomField) {
+            nomField.classList.add('form-control');
+            nomField.setAttribute('placeholder', 'Exemple : Secteur 04, Quartier Mossikro...');
+        }
+        if(communeField) {
+            communeField.classList.add('form-select');
+        }
+
+        // 1. Initialisation de la carte Leaflet
+        var map = L.map('map').setView([12.37, -1.52], 12);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        var drawnItems = new L.FeatureGroup().addTo(map);
+        var communeLayerGroup = L.layerGroup().addTo(map);
+        var wktParser = new Wkt.Wkt();
+
+        // 2. Configuration de Leaflet Draw
+        var drawControl = new L.Control.Draw({
+            edit: { featureGroup: drawnItems, remove: true },
+            draw: {
+                polygon: {
+                    allowIntersection: false,
+                    showArea: true,
+                    shapeOptions: { color: '#244197', weight: 3, fillColor: '#244197', fillOpacity: 0.15 }
+                },
+                polyline: false, rectangle: false, circle: false, marker: false, circlemarker: false
+            }
+        });
+        map.addControl(drawControl);
+
+        // 3. Rechargement si mode modification (WKT -> Carte)
+        var initialWKT = document.getElementById('geom_wkt').value;
+        if (initialWKT && initialWKT !== 'None' && initialWKT.trim() !== '') {
+            try {
+                wktParser.read(initialWKT);
+                var existingLayer = wktParser.toObject({ color: '#244197', weight: 3, fillColor: '#244197', fillOpacity: 0.15 });
+                drawnItems.addLayer(existingLayer);
+                map.fitBounds(existingLayer.getBounds());
+            } catch (e) {
+                console.error("Erreur de parsing initiale WKT :", e);
+            }
+        }
+
+        // 4. Événements de dessin
+        map.on(L.Draw.Event.CREATED, function (e) {
+            drawnItems.clearLayers(); // Conserve un seul polygone sur la carte
+            var layer = e.layer;
+            drawnItems.addLayer(layer);
+            updateWktFields();
+        });
+
+        map.on(L.Draw.Event.EDITED, function (e) { 
+            updateWktFields(); 
+        });
+        
+        map.on(L.Draw.Event.DELETED, function (e) { 
+            document.getElementById('geom_wkt').value = ''; 
+            document.getElementById('geom_wkt_maj').value = ''; 
+        });
+
+        // 5. Générateur WKT sécurisé avec vérification des dimensions de tableaux
+        function updateWktFields() {
+            if (drawnItems.getLayers().length > 0) {
+                var layer = drawnItems.getLayers()[0];
+                
+                try {
+                    var latlngs = layer.getLatLngs();
+                    
+                    // Sécurité Leaflet Draw : Parfois getLatLngs() renvoie [[LatLng, LatLng...]] au lieu de [LatLng...]
+                    if (latlngs.length > 0 && Array.isArray(latlngs[0])) {
+                        latlngs = latlngs[0];
+                    }
+                    
+                    if (latlngs && latlngs.length > 0) {
+                        var wktPoints = [];
+                        
+                        // Génération des points au format standard PostGIS : "LONGITUDE LATITUDE"
+                        for (var i = 0; i < latlngs.length; i++) {
+                            if (latlngs[i] && latlngs[i].lng && latlngs[i].lat) {
+                                wktPoints.push(latlngs[i].lng + " " + latlngs[i].lat);
+                            }
+                        }
+                        
+                        if (wktPoints.length > 0) {
+                            // Fermeture obligatoire du polygone : Le premier point est recréé à la fin
+                            var premierPoint = latlngs[0].lng + " " + latlngs[0].lat;
+                            wktPoints.push(premierPoint);
+                            
+                            var safeWktString = "POLYGON((" + wktPoints.join(",") + "))";
+                            
+                            document.getElementById('geom_wkt').value = safeWktString;
+                            document.getElementById('geom_wkt_maj').value = safeWktString;
+                            console.log("WKT Généré avec succès :", safeWktString);
+                        }
+                    }
+                } catch(err) {
+                    console.error("Erreur lors de l'extraction des coordonnées : ", err);
+                }
+            } else {
+                document.getElementById('geom_wkt').value = '';
+                document.getElementById('geom_wkt_maj').value = '';
+            }
+        }
+
+        // Bloque et synchronise juste avant l'envoi au serveur
+        document.getElementById('secteurForm').addEventListener('submit', function(e) {
+            updateWktFields(); 
+        });
+
+        // 6. Affichage des limites communales de référence
+        var secteursExistantsLayerGroup = L.layerGroup().addTo(map); 
+
+        function chargerFrontieresCommune() {
+            if (!communeField) return;
+            var communeId = communeField.value;
+            
+            communeLayerGroup.clearLayers();
+            secteursExistantsLayerGroup.clearLayers();
+
+            if (!communeId) return;
+
+            fetch(`/api/communes/${communeId}/`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.geometry || data.type === "Feature") {
+                        var communeLayer = L.geoJSON(data, {
+                            style: { color: '#dc3545', weight: 2, dashArray: '6, 8', fillOpacity: 0.01 }
+                        });
+                        communeLayerGroup.addLayer(communeLayer);
+                        
+                        if (!initialWKT || initialWKT === 'None' || initialWKT.trim() === '') {
+                            map.fitBounds(communeLayer.getBounds(), { padding: [20, 20] });
+                        }
+                    }
+                })
+                .catch(err => console.error("Erreur API Limites Commune :", err));
+
+            fetch(`/api/communes/${communeId}/secteurs/`)
+                .then(response => response.json())
+                .then(geojsonData => {
+                    var secteursLayer = L.geoJSON(geojsonData, {
+                        style: { color: '#e67e22', weight: 2, fillColor: '#e67e22', fillOpacity: 0.15 },
+                        onEachFeature: function (feature, layer) {
+                            if (feature.properties && feature.properties.nom) {
+                                layer.bindTooltip("Occupé : " + feature.properties.nom, { sticky: true });
+                            }
+                        }
+                    });
+                    secteursExistantsLayerGroup.addLayer(secteursLayer);
+                })
+                .catch(err => console.error("Erreur API Secteurs existants :", err));
+        }
+
+        if(communeField) {
+            communeField.addEventListener('change', chargerFrontieresCommune);
+            if (communeField.value) { chargerFrontieresCommune(); }
+        }
+    });
+</script>
+{% endblock admin_content %}

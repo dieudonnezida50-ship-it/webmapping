@@ -1,0 +1,274 @@
+{% extends 'admin/admin_dashboard.html' %}
+
+{% block admin_content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-4 border-bottom">
+    <div class="d-flex align-items-center">
+        <a href="{% url 'liste_equipements' %}" class="btn btn-outline-secondary btn-sm me-3 rounded-circle shadow-sm" style="width: 38px; height: 38px; display: flex; align-items: center; justify-content: center;" title="Retour au registre">
+            <i class="fa-solid fa-arrow-left"></i>
+        </a>
+        <div>
+            <h1 class="h3 fw-bold text-dark mb-1">
+                <i class="fa-solid fa-screwdriver-wrench me-2 text-primary"></i>
+                {% if form.instance.pk %}Modification d'Infrastructure{% else %}Saisie d'une Nouvelle Infrastructure{% endif %}
+            </h1>
+            <p class="text-muted small mb-0">Formulaire intelligent de gestion et de géolocalisation des équipements communaux.</p>
+        </div>
+    </div>
+</div>
+
+<div class="container-fluid p-0">
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show shadow-sm border-0 rounded-3 mb-4" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <form method="POST" action="" id="equipementForm" class="needs-validation" novalidate>
+        {% csrf_token %}
+
+        <div class="row g-4">
+            <div class="col-xl-7">
+                <div class="card border-0 shadow-sm rounded-3 mb-4">
+                    <div class="card-header bg-white border-bottom-0 py-3">
+                        <h5 class="card-title fw-bold text-dark mb-1">Informations générales</h5>
+                        <p class="text-muted small mb-0">Nom, type, secteur et année de service de l'équipement.</p>
+                    </div>
+                    <div class="card-body pt-3">
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <label for="{{ form.nom.id_for_label }}" class="form-label fw-semibold text-secondary">Nom de l'équipement <span class="text-danger">*</span></label>
+                                {{ form.nom }}
+                                {% if form.nom.errors %}<div class="text-danger small mt-1">{{ form.nom.errors }}</div>{% endif %}
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="{{ form.code_identification.id_for_label }}" class="form-label fw-semibold text-secondary">Code d'identification</label>
+                                {{ form.code_identification }}
+                                {% if form.code_identification.errors %}<div class="text-danger small mt-1">{{ form.code_identification.errors }}</div>{% endif %}
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="{{ form.type_equipement.id_for_label }}" class="form-label fw-semibold text-secondary">Type d'équipement <span class="text-danger">*</span></label>
+                                {{ form.type_equipement }}
+                                {% if form.type_equipement.errors %}<div class="text-danger small mt-1">{{ form.type_equipement.errors }}</div>{% endif %}
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="{{ form.secteur.id_for_label }}" class="form-label fw-semibold text-secondary">Secteur / Quartier <span class="text-danger">*</span></label>
+                                {{ form.secteur }}
+                                {% if form.secteur.errors %}<div class="text-danger small mt-1">{{ form.secteur.errors }}</div>{% endif %}
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="{{ form.annee_realisation.id_for_label }}" class="form-label fw-semibold text-secondary">Année de réalisation</label>
+                                {{ form.annee_realisation }}
+                                {% if form.annee_realisation.errors %}<div class="text-danger small mt-1">{{ form.annee_realisation.errors }}</div>{% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card border-0 shadow-sm rounded-3 mb-4">
+                    <div class="card-header bg-white border-bottom-0 py-3">
+                        <h5 class="card-title fw-bold text-dark mb-1">Statut & exploitation</h5>
+                        <p class="text-muted small mb-0">État opérationnel et accessibilité de l'équipement.</p>
+                    </div>
+                    <div class="card-body pt-3">
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label for="{{ form.etat.id_for_label }}" class="form-label fw-semibold text-secondary">État physique</label>
+                                {{ form.etat }}
+                                {% if form.etat.errors %}<div class="text-danger small mt-1">{{ form.etat.errors }}</div>{% endif %}
+                            </div>
+                            <div class="col-md-4">
+                                <label for="{{ form.statut.id_for_label }}" class="form-label fw-semibold text-secondary">Statut</label>
+                                {{ form.statut }}
+                                {% if form.statut.errors %}<div class="text-danger small mt-1">{{ form.statut.errors }}</div>{% endif %}
+                            </div>
+                            <div class="col-md-4">
+                                <label for="{{ form.accessibilite.id_for_label }}" class="form-label fw-semibold text-secondary">Accessibilité</label>
+                                {{ form.accessibilite }}
+                                {% if form.accessibilite.errors %}<div class="text-danger small mt-1">{{ form.accessibilite.errors }}</div>{% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-5">
+                <div class="card border-0 shadow-sm rounded-3 mb-4" style="border-left: 4px solid #0d6efd;">
+                    <div class="card-header bg-white border-bottom-0 py-3">
+                        <h5 class="card-title fw-bold text-dark mb-1">Localisation</h5>
+                        <p class="text-muted small mb-0">Coordonnées GPS précises de l'emplacement.</p>
+                    </div>
+                    <div class="card-body pt-3">
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <label for="{{ form.latitude.id_for_label }}" class="form-label fw-semibold text-secondary">Latitude</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-white border-end-0 text-muted"><i class="fa-solid fa-location-dot"></i></span>
+                                    {{ form.latitude }}
+                                </div>
+                                {% if form.latitude.errors %}<div class="text-danger small mt-1">{{ form.latitude.errors }}</div>{% endif %}
+                            </div>
+                            <div class="col-12">
+                                <label for="{{ form.longitude.id_for_label }}" class="form-label fw-semibold text-secondary">Longitude</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-white border-end-0 text-muted"><i class="fa-solid fa-map-pin"></i></span>
+                                    {{ form.longitude }}
+                                </div>
+                                {% if form.longitude.errors %}<div class="text-danger small mt-1">{{ form.longitude.errors }}</div>{% endif %}
+                            </div>
+                            <div class="col-12">
+                                <div class="d-none">{{ form.localisation }}</div>
+                                <div class="text-muted small mt-2">Ces coordonnées permettent de positionner l'équipement sur la carte.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% include 'admin/partials/details_metiers.html' %}
+
+        <div class="row mt-4 pt-3 border-top">
+            <div class="col-12 d-flex flex-column flex-sm-row justify-content-end gap-2">
+                <a href="{% url 'liste_equipements' %}" class="btn btn-outline-secondary rounded-2 px-4">
+                    <i class="fa-solid fa-arrow-left me-2"></i>Retour
+                </a>
+                <button type="submit" class="btn btn-primary rounded-2 px-4">
+                    <i class="fa-solid fa-save me-2"></i>Enregistrer
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<style>
+    .card { transition: transform 0.18s ease, box-shadow 0.18s ease; }
+    .card:hover { transform: translateY(-1px); }
+    .form-label { font-size: 0.95rem; }
+    .input-group-text { border-right: 0; }
+    .form-control, .form-select { border-radius: 0.65rem; }
+    .card-header h5 { font-size: 1rem; }
+    .badge { font-size: 0.78rem; letter-spacing: 0.02em; }
+    .border-left-primary { border-left: 4px solid #0d6efd !important; }
+</style>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        var typeEquipementSelect = document.querySelector('select[name="type_equipement"]');
+        var equipementForm = document.getElementById('equipementForm');
+        
+        // 1. Embellissement initial des inputs générés par Django (Tronc Commun)
+        var champsTroncCommun = equipementForm.querySelectorAll('input:not([type="checkbox"]), select, textarea');
+        champsTroncCommun.forEach(function(el) {
+            if (el.tagName === 'SELECT') {
+                el.classList.add('form-select');
+            } else if (el.type !== 'hidden') {
+                el.classList.add('form-control');
+            }
+        });
+
+        // 2. Gestion intelligente et fluide du changement de type
+        if (typeEquipementSelect) {
+            typeEquipementSelect.addEventListener('change', function() {
+                var selectedValue = this.value;
+                var equipementForm = document.getElementById('equipementForm');
+                var formData = new FormData(equipementForm);
+                if (selectedValue) formData.set('type_id', selectedValue);
+                else formData.delete('type_id');
+
+                // Récupérer le token CSRF depuis le cookie
+                var getCookie = function(name) {
+                    var cookieValue = null;
+                    if (document.cookie && document.cookie !== '') {
+                        var cookies = document.cookie.split(';');
+                        for (var i = 0; i < cookies.length; i++) {
+                            var cookie = cookies[i].trim();
+                            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                                break;
+                            }
+                        }
+                    }
+                    return cookieValue;
+                };
+                var csrftoken = getCookie('csrftoken');
+
+                // Show spinner while fetching
+                var spinner = document.getElementById('detailsSpinner');
+                if (!spinner) {
+                    spinner = document.createElement('div');
+                    spinner.id = 'detailsSpinner';
+                    spinner.className = 'text-center py-3';
+                    spinner.innerHTML = '<div class="spinner-border text-primary" role="status"><span class="visually-hidden">Chargement...</span></div>';
+                }
+                var currentCard = document.getElementById('card-details-metiers');
+                if (currentCard && currentCard.parentNode) currentCard.parentNode.insertBefore(spinner, currentCard);
+
+                fetch(window.location.pathname, {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRFToken': csrftoken
+                    },
+                    body: formData,
+                    credentials: 'same-origin'
+                })
+                .then(function(resp) {
+                    var ct = resp.headers.get('content-type') || '';
+                    if (ct.indexOf('application/json') !== -1) return resp.json();
+                    return resp.text().then(function(t){ return { html: t }; });
+                })
+                .then(function(data) {
+                    if (spinner && spinner.parentNode) spinner.parentNode.removeChild(spinner);
+                    console.log('Received details fragment');
+                    if (!data || !data.html) {
+                        console.warn('No HTML returned for details');
+                        return;
+                    }
+                    var parser = new DOMParser();
+                    var doc = parser.parseFromString(data.html, 'text/html');
+                    var newCard = doc.getElementById('card-details-metiers');
+                    if (!newCard) { console.warn('Fragment has no card-details-metiers'); return; }
+                    var currentCard = document.getElementById('card-details-metiers');
+                    if (currentCard) {
+                        currentCard.innerHTML = newCard.innerHTML;
+                        currentCard.className = newCard.className;
+                    } else {
+                        var formEl = document.getElementById('equipementForm');
+                        if (formEl) formEl.insertAdjacentHTML('beforeend', newCard.outerHTML);
+                    }
+                })
+                .catch(function(err) {
+                    if (spinner && spinner.parentNode) spinner.parentNode.removeChild(spinner);
+                    console.error('Erreur lors du fetch des détails:', err);
+                });
+            });
+        }
+
+        // 3. Embellissement automatique et structuration en grille Bootstrap des éléments du sous-formulaire métier
+        var cardMetiers = document.getElementById('card-details-metiers');
+        if (cardMetiers) {
+            var inputsMetiers = cardMetiers.querySelectorAll('input, select, textarea');
+            inputsMetiers.forEach(function(el) {
+                if (el.tagName === 'SELECT') {
+                    el.classList.add('form-select');
+                } else if (el.type === 'checkbox') {
+                    el.classList.add('form-check-input');
+                    var parentDiv = el.parentElement;
+                    if (parentDiv && !parentDiv.classList.contains('form-switch')) {
+                        parentDiv.classList.add('form-check', 'form-switch', 'mt-1');
+                    }
+                } else {
+                    el.classList.add('form-control');
+                }
+            });
+        }
+    });
+</script>
+{% endblock admin_content %}

@@ -1,0 +1,247 @@
+{% extends 'admin/admin_dashboard.html' %}
+{% load static %}
+
+{% block admin_content %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css" />
+
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-4 border-bottom">
+    <div class="d-flex align-items-center">
+        <a href="{% url 'liste_communes' %}" class="btn btn-outline-secondary btn-sm me-3 rounded-circle shadow-sm" style="width: 35px; height: 35px; display: flex; align-items: center; justify-content: center;" title="Retour à la liste">
+            <i class="fa-solid fa-arrow-left"></i>
+        </a>
+        <h1 class="h2 fw-bold text-dark mb-0">
+            <i class="fa-solid fa-city me-2 text-primary"></i>
+            {{ title }}
+        </h1>
+    </div>
+</div>
+
+<div class="container-fluid p-0">
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show shadow-sm border-0 rounded-3 mb-4" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="row g-4">
+        <div class="col-lg-4">
+            <div class="card shadow-sm border-0 rounded-3 h-100">
+                <div class="card-header bg-white border-0 py-3">
+                    <h5 class="mb-0 fw-bold text-dark"><i class="fa-solid fa-list-check me-2 text-secondary"></i>Caractéristiques</h5>
+                </div>
+                <div class="card-body p-4 pt-1">
+                    <form method="POST" id="communeSpatialForm">
+                        {% csrf_token %}
+                        
+                        <div class="form-group mb-3">
+                            <label class="form-label fw-semibold text-secondary small text-uppercase mb-1">Nom de la Commune / Arrondissement</label>
+                            {{ form.nom }}
+                        </div>
+                        
+                        <div class="form-group mb-3">
+                            <label class="form-label fw-semibold text-secondary small text-uppercase mb-1">Code INSEE / Identifiant Administratif</label>
+                            {{ form.code_insee }}
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label class="form-label fw-semibold text-secondary small text-uppercase mb-1">Population</label>
+                            {{ form.population }}
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label class="form-label fw-semibold text-secondary small text-uppercase mb-1"><i class="fa-solid fa-location-dot me-1 text-info"></i>Latitude du centre</label>
+                            {{ form.latitude }}
+                            <small class="form-text text-muted d-block mt-1">Saisissez manuellement ou chargez depuis un fichier</small>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label class="form-label fw-semibold text-secondary small text-uppercase mb-1"><i class="fa-solid fa-location-dot me-1 text-info"></i>Longitude du centre</label>
+                            {{ form.longitude }}
+                            <small class="form-text text-muted d-block mt-1">Saisissez manuellement ou chargez depuis un fichier</small>
+                        </div>
+
+                        <div class="form-group mb-4">
+                            <label class="form-label fw-semibold text-secondary small text-uppercase mb-1"><i class="fa-solid fa-file-import me-1 text-success"></i>Importer depuis un fichier</label>
+                            {{ form.fichier_import }}
+                            <small class="form-text text-muted d-block mt-1">Formats acceptés : CSV (avec colonnes latitude/longitude) ou GeoJSON</small>
+                        </div>
+
+                        <div class="form-group mb-4">
+                            <label class="form-label fw-semibold small text-uppercase mb-1" style="color: #244197;"><i class="fa-solid fa-code me-1"></i>Primitive Géométrique (Objet spatial PostGIS)</label>
+                            {{ form.geom }}
+                        </div>
+
+                        <div class="mt-4 pt-3 border-top">
+                            <button type="submit" class="btn btn-primary bg-gradient w-100 py-2.5 shadow-sm fw-medium rounded-3">
+                                <i class="fa-solid fa-floppy-disk me-2"></i>Enregistrer la Commune
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0 rounded-3 h-100" style="min-height: 550px;">
+                <div class="card-header bg-white border-0 py-3 d-flex align-items-center justify-content-between">
+                    <h5 class="mb-0 fw-bold text-dark"><i class="fa-solid fa-map-location-dot me-2 text-secondary"></i>Tracer les limites communales</h5>
+                    <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 rounded-pill fw-semibold small">Mode Polygone unique</span>
+                </div>
+                <div class="card-body p-0 position-relative flex-grow-1" style="min-height: 480px;">
+                    <div id="map-digitizer" style="position: absolute; top:0; bottom:0; left:0; right:0; height:100%; width:100%; border-radius: 0 0 12px 12px; z-index: 1;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
+
+<script>
+    // 1. Initialisation de la carte Leaflet centrée sur Ouagadougou
+    var map = L.map('map-digitizer').setView([12.37, -1.52], 12);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    // Ajustement visuel des widgets Django Forms pour l'interface Bootstrap
+    const inputsText = document.querySelectorAll('input[type="text"], input[type="number"]');
+    inputsText.forEach(input => input.classList.add('form-control'));
+
+    // 2. Configuration des conteneurs de couches géographiques
+    var drawnItems = new L.FeatureGroup().addTo(map); 
+    var communesExistantesLayer = L.layerGroup().addTo(map); 
+
+    // 3. CHARGEMENT ASYNCHRONE DE TOUTES LES COMMUNES EXISTANTES (VÉRIFICATION TOPOLOGIQUE)
+    fetch('/api/communes/all/')
+        .then(response => response.json())
+        .then(geojsonData => {
+            var backgroundLayer = L.geoJSON(geojsonData, {
+                style: {
+                    color: '#7f8c8d',       
+                    weight: 2,
+                    fillColor: '#95a5a6',
+                    fillOpacity: 0.25       
+                },
+                onEachFeature: function (feature, layer) {
+                    if (feature.properties && feature.properties.nom) {
+                        layer.bindTooltip("Territoire occupé : " + feature.properties.nom, { sticky: true });
+                    }
+                }
+            });
+            communesExistantesLayer.addLayer(backgroundLayer);
+            
+            var initialWKT = "{{ geom_wkt|safe }}";
+            if ((!initialWKT || initialWKT === "" || initialWKT === "None") && backgroundLayer.getLayers().length > 0) {
+                map.fitBounds(backgroundLayer.getBounds(), { padding: [20, 20] });
+            }
+        })
+        .catch(err => console.error("Erreur de récupération du référentiel des communes :", err));
+
+    // 4. Paramétrage de la barre d'outils Leaflet Draw
+    var drawControl = new L.Control.Draw({
+        draw: {
+            polygon: {
+                allowIntersection: false, 
+                shapeOptions: {
+                    color: '#244197',       
+                    weight: 3,              
+                    fillColor: '#417690',   
+                    fillOpacity: 0.4        
+                }
+            },
+            polyline: false, circle: false, rectangle: false, marker: false, circlemarker: false
+        },
+        edit: {
+            featureGroup: drawnItems,
+            remove: true
+        }
+    });
+    map.addControl(drawControl);
+
+    // --- PARSER WKT ---
+    function parseWKTToLatLngs(wktString) {
+        try {
+            var coordsString = wktString.replace("POLYGON", "").replace("polygon", "").trim();
+            coordsString = coordsString.replace(/\(\(/g, "").replace(/\)\)/g, "");
+            var points = coordsString.split(",");
+            var latLngs = [];
+            
+            for (var i = 0; i < points.length; i++) {
+                var p = points[i].trim().split(" ");
+                if (p.length === 2) {
+                    var lng = parseFloat(p[0]);
+                    var lat = parseFloat(p[1]);
+                    if (!isNaN(lat) && !isNaN(lng)) {
+                        latLngs.push([lat, lng]);
+                    }
+                }
+            }
+            if (latLngs.length > 1 && latLngs[0][0] === latLngs[latLngs.length - 1][0] && latLngs[0][1] === latLngs[latLngs.length - 1][1]) {
+                latLngs.pop();
+            }
+            return latLngs;
+        } catch (e) {
+            console.error("Erreur lors du parsing WKT : ", e);
+            return null;
+        }
+    }
+
+    // --- CHARGEMENT DE LA GÉOMÉTRIE EN MODE MODIFICATION ---
+    var existingWKT = "{{ geom_wkt|safe }}";
+    if (existingWKT && existingWKT !== "" && existingWKT !== "None") {
+        var coordinates = parseWKTToLatLngs(existingWKT);
+        if (coordinates && coordinates.length > 0) {
+            var existingPolygon = L.polygon(coordinates, {
+                color: '#244197',
+                weight: 3,
+                fillColor: '#417690',
+                fillOpacity: 0.4
+            });
+            drawnItems.addLayer(existingPolygon);
+            map.fitBounds(existingPolygon.getBounds());
+        }
+    }
+
+    // --- CAPTURE ET SÉRIALISATION DU TRACÉ VERS LE CHAMP DJANGO ---
+    function updateWKTField() {
+        if (drawnItems.getLayers().length === 0) {
+            var geomInput = document.getElementById('id_geom');
+            if(geomInput) geomInput.value = '';
+            return;
+        }
+        var layer = drawnItems.getLayers()[0];
+        
+        var geojsonObj = layer.toGeoJSON();
+        var geomInput = document.getElementById('id_geom');
+        if(geomInput) {
+            geomInput.value = JSON.stringify(geojsonObj.geometry);
+        }
+    }
+
+    map.on(L.Draw.Event.CREATED, function (e) {
+        var layer = e.layer;
+        drawnItems.clearLayers(); 
+        drawnItems.addLayer(layer);
+        updateWKTField();
+    });
+
+    map.on(L.Draw.Event.EDITED, function () {
+        updateWKTField();
+    });
+
+    map.on(L.Draw.Event.DELETED, function () {
+        var geomInput = document.getElementById('id_geom');
+        if(geomInput) geomInput.value = '';
+    });
+
+    setTimeout(function(){ map.invalidateSize(); }, 200);
+</script>
+{% endblock admin_content %}

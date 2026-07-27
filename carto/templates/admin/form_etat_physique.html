@@ -1,0 +1,103 @@
+{% extends 'admin/admin_dashboard.html' %}
+{% load static %}
+
+{% block admin_content %}
+<div class="container-fluid px-0">
+
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-4 border-bottom">
+        <div class="d-flex align-items-center">
+            <a href="{% url 'liste_etats_physiques' %}" class="btn btn-outline-secondary btn-sm me-3 rounded-circle shadow-sm" title="Retour à la liste">
+                <i class="fa-solid fa-arrow-left"></i>
+            </a>
+            <h1 class="h2 fw-bold text-dark mb-0">
+                {% if is_edit %}
+                    <i class="fa-solid fa-pen-to-square me-2 text-primary"></i>Mise à jour de la Nomenclature
+                {% else %}
+                    <i class="fa-solid fa-plus me-2 text-primary"></i>Configuration de l'État Physique
+                {% endif %}
+            </h1>
+        </div>
+    </div>
+
+    <div class="alert alert-info border-0 shadow-sm rounded-4 p-3 mb-4 d-flex align-items-center" role="alert">
+        <div class="icon-shape bg-info bg-opacity-10 text-info rounded-circle p-2 me-3 d-flex align-items-center justify-content-center" style="width: 45px; height: 45px; flex-shrink: 0;">
+            <i class="fa-solid fa-circle-info fa-lg"></i>
+        </div>
+        <div>
+            <strong class="text-dark d-block mb-1">Impact du module sur la base de données spatiale (SIG)</strong>
+            <span class="text-muted small">
+                Toute modification ou ajout d'un état physique alimente dynamiquement les graphiques décisionnels du tableau de bord et ajuste en temps réel la symbologie (pastilles colorées) sur la carte interactive Leaflet via l'API PostgreSQL/PostGIS.
+            </span>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm rounded-4 p-3 bg-white">
+                <div class="card-body">
+                    <h5 class="card-title fw-bold text-dark border-bottom pb-3 mb-4">
+                        <i class="fa-solid fa-file-signature me-2 text-primary"></i>{{ title }}
+                    </h5>
+                    
+                    <form method="POST" class="needs-validation" novalidate autocomplete="off">
+                        {% csrf_token %}
+                        
+                        <div class="mb-4">
+                            <label for="{{ form.libelle.id_for_label }}" class="form-label fw-semibold text-dark small mb-1.5">
+                                Libellé qualificatif de l'état physique <span class="text-danger">*</span>
+                            </label>
+                            <div class="input-group shadow-sm rounded-3 overflow-hidden">
+                                <span class="input-group-text bg-light border-end-0 border-0 text-muted px-3"><i class="fa-solid fa-tag"></i></span>
+                                {{ form.libelle }}
+                            </div>
+                            <div class="form-text text-muted mt-2 small">
+                                Ce champ servira d'étiquette d'identification pour la catégorisation des infrastructures (Ex: <i>Neuf</i>, <i>Bon état</i>, <i>Passable</i>, <i>Dégradé</i>).
+                            </div>
+                            {% if form.libelle.errors %}
+                            <div class="text-danger small fw-medium mt-1.5 px-1">
+                                <i class="fa-solid fa-circle-exclamation me-1"></i>{{ form.libelle.errors }}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2 pt-3.5 border-top mt-4">
+                            <a href="{% url 'liste_etats_physiques' %}" class="btn btn-light border px-4 py-2-5 rounded-3 fw-medium transition-all" style="min-width: 150px;">
+                                Annuler
+                            </a>
+                            <button type="submit" class="btn btn-primary bg-gradient shadow-sm px-4 py-2-5 rounded-3 fw-medium transition-all" style="min-width: 150px;">
+                                <i class="fa-solid fa-floppy-disk me-2"></i>Enregistrer
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<style>
+.mb-1.5 { margin-bottom: 0.375rem !important; }
+.mt-1.5 { margin-top: 0.375rem !important; }
+.pt-3.5 { padding-top: 1.25rem !important; }
+.py-2-5 { padding-top: 0.625rem; padding-bottom: 0.625rem; }
+.transition-all { transition: all 0.2s ease-in-out; }
+.transition-all:hover { transform: translateY(-1px); }
+
+/* Redéfinition du style du champ injecté par Django pour suivre la charte graphique */
+#id_libelle, .input-group > input[type="text"] {
+    border: 1px solid #dee2e6 !important;
+    border-left: none !important;
+    padding: 0.625rem 0.75rem;
+    font-size: 0.95rem;
+    width: 100%;
+}
+#id_libelle:focus, .input-group > input[type="text"]:focus {
+    border-color: #86b7fe !important;
+    box-shadow: none !important;
+}
+.input-group-text {
+    border: 1px solid #dee2e6 !important;
+}
+</style>
+{% endblock admin_content %}

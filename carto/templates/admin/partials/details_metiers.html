@@ -1,0 +1,55 @@
+{% if sous_form %}
+<div class="row mt-2" id="card-details-metiers">
+    <div class="col-12">
+        <div class="card border-0 shadow-sm rounded-3 card-metier-accent animate-fade-in">
+            <div class="card-header bg-dark text-white py-3 border-bottom-0 rounded-top-3">
+                <h5 class="card-title fw-bold mb-0">
+                    <i class="fa-solid fa-gears me-2 text-warning"></i>Information Complémentaire : {{ type_nom|default:"Équipement" }}
+                </h5>
+            </div>
+            <div class="card-body bg-white border border-top-0 rounded-bottom-3 pt-4">
+                <div class="row row-cols-1 row-cols-md-2 g-4">
+                    {% for field in sous_form %}
+                        <div class="col mb-2">
+                            {% if field.field.widget.input_type == 'checkbox' %}
+                                <div class="form-check form-switch mb-2">
+                                    {{ field }}
+                                    <label class="form-check-label fw-semibold text-dark ms-2" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                </div>
+                                {% if field.help_text %}
+                                    <div class="form-text text-muted small">{{ field.help_text }}</div>
+                                {% endif %}
+                                {% if field.errors %}
+                                    <div class="text-danger small mt-1">{{ field.errors }}</div>
+                                {% endif %}
+                            {% else %}
+                                <label for="{{ field.id_for_label }}" class="form-label fw-semibold text-dark">{{ field.label }} {% if field.field.required %}<span class="text-danger">*</span>{% endif %}</label>
+                                <div>
+                                    {{ field }}
+                                </div>
+                                {% if field.help_text %}
+                                    <div class="form-text text-muted small">{{ field.help_text }}</div>
+                                {% endif %}
+                                {% if field.errors %}
+                                    <div class="text-danger small mt-1">{{ field.errors }}</div>
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="row mt-2" id="card-details-metiers">
+    <div class="col-12">
+        <div class="card border-0 shadow-sm rounded-3 card-metier-accent">
+            <div class="card-body bg-white border rounded-3 pt-4 text-center text-muted">
+                <i class="fa-solid fa-info-circle fa-2xl mb-2"></i>
+                <p class="mb-0">Sélectionnez un type d'équipement pour afficher les champs supplémentaires.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}

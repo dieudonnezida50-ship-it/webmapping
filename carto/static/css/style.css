@@ -1,0 +1,147 @@
+/* =========================================================================
+   📄 static/css/style.css - SYSTÈME DE STYLISATION SIG POUR SOUTENANCE
+   ========================================================================= */
+
+/* Configuration globale et typographie moderne */
+body {
+    padding: 0;
+    margin: 0;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    font-family: 'Poppins', sans-serif;
+    background-color: #f4f6f9;
+}
+
+/* Barre de navigation principale */
+#navbar-sig {
+    background: linear-gradient(135deg, #2c3e50 0%, #1a252f 100%);
+    border-bottom: 3px solid #1abc9c;
+    min-height: 65px;
+    z-index: 1000;
+}
+
+#navbar-sig .navbar-brand {
+    font-size: 19px;
+}
+
+/* Conteneur de l'application (sous la navbar) */
+#main-container {
+    flex: 1;
+    display: flex;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Barre latérale (Sidebar) - Style flottant moderne */
+#sidebar {
+    width: 330px;
+    background-color: rgba(255, 255, 255, 0.95);
+    -webkit-backdrop-filter: blur(10px); /* Safari iOS/WebKit support */
+    backdrop-filter: blur(10px);
+    border-right: 1px solid rgba(0, 0, 0, 0.08);
+    padding: 25px 20px;
+    overflow-y: auto;
+    z-index: 999;
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar-header h5 {
+    color: #2c3e50;
+    font-size: 16px;
+    letter-spacing: 0.3px;
+}
+
+/* Cartes pour encadrer les filtres */
+.filter-card {
+    background: #ffffff;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(0,0,0,0.03) !important;
+}
+
+.filter-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05) !important;
+}
+
+/* Champs de sélection stylisés */
+.form-select {
+    border-color: #e2e8f0;
+    border-radius: 8px;
+    font-size: 13.5px;
+    padding: 10px 12px;
+    color: #4a5568;
+    cursor: pointer;
+}
+
+.form-select:focus {
+    border-color: #3498db;
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.15);
+}
+
+/* Emplacement de la Carte Leaflet */
+#map {
+    flex: 1;
+    height: 100%;
+    z-index: 1;
+}
+
+/* --- SYMBOLOGIE DES MARQUEURS (ICÔNES SUR LA CARTE) --- */
+.custom-pin {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    color: white;
+    border: 2px solid #ffffff;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.35);
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.custom-pin:hover {
+    transform: scale(1.25) rotate(5deg);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+    z-index: 9999 !important;
+}
+
+/* =========================================================================
+   🛠️ SURCHARGE CORRIGÉE : SUPPRESSION DES MARGES INTERNES DE LEAFLET
+   ========================================================================= */
+
+/* Élimine les paddings internes du conteneur global Leaflet */
+.leaflet-popup-content-wrapper {
+    padding: 0 !important;
+    overflow: hidden !important;
+    border-radius: 12px !important;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Force le bloc de contenu HTML à s'étendre à 100% sans marges forcées par défaut */
+.leaflet-popup-content {
+    margin: 0 !important;
+    width: 100% !important;
+}
+
+/* Ajustement du bouton fermer (X) pour se fondre proprement sur l'en-tête thématique coloré */
+.leaflet-popup-close-button {
+    color: #ffffff !important;
+    font-weight: bold !important;
+    padding: 12px 10px 0 0 !important;
+    font-size: 16px !important;
+    z-index: 1001;
+}
+
+.leaflet-popup-close-button:hover {
+    color: #f39c12 !important; /* Effet de surbrillance lors du passage de la souris */
+    background: transparent !important;
+}
+
+/* Style additionnel pour s'assurer que la carte d'information reste fluide */
+.popup-card {
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+    border: none !important; /* Retire les bordures inutiles */
+}
