@@ -76,10 +76,10 @@ WSGI_APPLICATION = 'geocommune.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.contrib.gis.db.backends.postgis',  # Le moteur spatial
-        'NAME': 'gestion_infrastructures_db',
-        'USER': 'postgres',                                  # Ton utilisateur PostgreSQL
-        'PASSWORD': 'root',             # METS ICI TON MOT DE PASSE POSTGRESQL
+        'ENGINE': 'django.contrib.gis.db.backends.postgis',
+        'NAME': 'webmapping',
+        'USER': 'zida',
+        'PASSWORD': '14037757',
         'HOST': '127.0.0.1',
         'PORT': '5432',
     }
