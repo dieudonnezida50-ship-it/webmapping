@@ -1,0 +1,228 @@
+/* =========================================================================
+   theme.css - Thème commun GeoCommune
+   ========================================================================= */
+
+:root {
+    --color-primary: #3498db;
+    --color-primary-dark: #2980b9;
+    --color-accent: #1abc9c;
+    --color-success: #2ecc71;
+    --color-warning: #f39c12;
+    --color-danger: #e74c3c;
+    --color-infra: #2c3e50;
+    --color-bg: #f4f6f9;
+    --color-text: #2c3e50;
+    --color-muted: #6c757d;
+
+    --navbar-gradient: linear-gradient(135deg, #2c3e50 0%, #1a252f 100%);
+    --radius-card: 16px;
+    --shadow-card: 0 6px 12px rgba(0, 0, 0, 0.08);
+    --shadow-card-hover: 0 15px 30px rgba(0, 0, 0, 0.12);
+    --font-main: 'Poppins', sans-serif;
+}
+
+/* ---------- Global ---------- */
+body {
+    font-family: var(--font-main);
+    background-color: var(--color-bg);
+    color: var(--color-text);
+}
+
+/* ---------- Barre de navigation ---------- */
+#navbar-sig {
+    background: var(--navbar-gradient);
+    border-bottom: 3px solid var(--color-accent);
+    min-height: 65px;
+    z-index: 1000;
+}
+
+#navbar-sig .navbar-brand {
+    font-size: 19px;
+}
+
+/* ---------- Cartes du tableau de bord ---------- */
+.dash-card {
+    border: none !important;
+    border-radius: var(--radius-card) !important;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.dash-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-card-hover) !important;
+}
+
+.dash-card::before {
+    content: "";
+    position: absolute;
+    width: 130px;
+    height: 130px;
+    border-radius: 50%;
+    top: -40px;
+    right: -40px;
+    opacity: 0.06;
+    transition: transform 0.4s ease;
+}
+
+.dash-card:hover::before {
+    transform: scale(1.2);
+}
+
+.card-infra   { border-left: 5px solid var(--color-infra) !important; }
+.card-ok      { border-left: 5px solid var(--color-success) !important; }
+.card-warning { border-left: 5px solid var(--color-warning) !important; }
+.card-danger  { border-left: 5px solid var(--color-danger) !important; }
+
+.card-infra::before   { background: var(--color-infra); }
+.card-ok::before      { background: var(--color-success); }
+.card-warning::before { background: var(--color-warning); }
+.card-danger::before  { background: var(--color-danger); }
+
+.icon-shape {
+    width: 55px;
+    height: 55px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    transition: transform 0.4s ease;
+}
+
+.dash-card:hover .icon-shape {
+    transform: scale(1.1) rotate(5deg);
+}
+
+.card-number {
+    font-size: 2.2rem;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.card-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* ---------- Filtres et champs ---------- */
+.filter-card {
+    background: #ffffff;
+    border-radius: 10px;
+    border: 1px solid rgba(0, 0, 0, 0.03) !important;
+    transition: all 0.3s ease;
+}
+
+.filter-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05) !important;
+}
+
+.form-select {
+    border-color: #e2e8f0;
+    border-radius: 8px;
+    font-size: 13.5px;
+    padding: 10px 12px;
+    color: #4a5568;
+    cursor: pointer;
+}
+
+.form-select:focus {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.15);
+}
+
+/* ---------- Page carte ---------- */
+.map-page {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+#main-container {
+    flex: 1;
+    display: flex;
+    position: relative;
+    overflow: hidden;
+}
+
+#sidebar {
+    width: 330px;
+    background-color: rgba(255, 255, 255, 0.95);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    border-right: 1px solid rgba(0, 0, 0, 0.08);
+    padding: 25px 20px;
+    overflow-y: auto;
+    z-index: 999;
+    display: flex;
+    flex-direction: column;
+}
+
+#map {
+    flex: 1;
+    height: 100%;
+    z-index: 1;
+}
+
+/* ---------- Marqueurs personnalisés ---------- */
+.custom-pin {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    color: white;
+    border: 2px solid #ffffff;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.35);
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.custom-pin:hover {
+    transform: scale(1.25) rotate(5deg);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+    z-index: 9999 !important;
+}
+
+/* ---------- Popups Leaflet (une seule définition) ---------- */
+.leaflet-popup-content-wrapper {
+    padding: 0 !important;
+    overflow: hidden;
+    border-radius: 12px !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15) !important;
+}
+
+.leaflet-popup-content {
+    margin: 0 !important;
+    width: 300px !important;
+}
+
+.leaflet-popup-close-button {
+    color: #ffffff !important;
+    font-weight: bold !important;
+    padding: 12px 10px 0 0 !important;
+    font-size: 16px !important;
+    z-index: 1001;
+}
+
+.leaflet-popup-close-button:hover {
+    color: var(--color-warning) !important;
+    background: transparent !important;
+}
+
+.popup-table {
+    width: 100%;
+    margin-bottom: 0;
+    font-size: 12.5px;
+}
+
+.popup-table td {
+    padding: 6px 10px;
+    border-bottom: 1px solid #f1f2f6;
+}
+
+.popup-table tr:last-child td {
+    border-bottom: none;
+}

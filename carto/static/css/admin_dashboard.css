@@ -250,3 +250,8 @@ body {
 #zoneFiltres {
     transition: all 0.3s ease-in-out;
 }
+
+.icon-shape {
+    flex-shrink: 0;
+    margin-left: 1rem;
+}
