@@ -84,17 +84,16 @@
             </thead>
             <tbody>
                 {% for eq in equipements %}
-                <tr class="ligne-equipement" 
-                    data-nom="{{ eq.nom|lower }}" 
-                    data-code="{{ eq.code_identification|lower }}" 
-                    data-type="{{ eq.type_equipement.libelle|lower }}" 
+                <tr class="ligne-equipement"
+                    data-nom="{{ eq.nom|lower }}"
+                    data-code="{{ eq.code_identification|lower }}"
+                    data-type="{{ eq.type_equipement.libelle|lower }}"
                     data-statut="{{ eq.statut.libelle }}">
-                    <td><span class="badge bg-light text-dark border font-monospace px-2 py-1.5">{{ eq.code_identification }}</span></td>
+                    <td><span class="badge bg-light text-dark border font-monospace px-2 py-1">{{ eq.code_identification }}</span></td>
                     <td class="fw-semibold text-dark cell-nom">{{ eq.nom }}</td>
                     <td>
                         {% if "forage" in eq.type_equipement.libelle|lower or "faucet" in eq.type_equipement.libelle|lower %}
-                            <i class="fa
--solid fa-faucet-drip me-2 text-warning"></i>
+                            <i class="fa-solid fa-faucet-drip me-2 text-warning"></i>
                         {% elif "école" in eq.type_equipement.libelle|lower or "scolaire" in eq.type_equipement.libelle|lower %}
                             <i class="fa-solid fa-graduation-cap me-2 text-primary"></i>
                         {% elif "santé" in eq.type_equipement.libelle|lower or "dispensaire" in eq.type_equipement.libelle|lower %}
@@ -106,28 +105,28 @@
                     </td>
                     <td>
                         <span class="d-block fw-medium small text-dark"><i class="fa-solid fa-city text-muted me-1 small"></i>{{ eq.secteur.commune.nom }}</span>
-                        <small class="text-muted"><i class="fa-solid fa-location-dot me-1 small"></i>Secteur: {{ eq.secteur.nom }}</small>
+                        <small class="text-muted"><i class="fa-solid fa-location-dot me-1 small"></i>Secteur : {{ eq.secteur.nom }}</small>
                     </td>
                     <td>
                         {% if eq.statut.libelle == "Opérationnel" %}
-                            <span class="badge bg-success bg-gradient px-2 py-1.5"><i class="fa-solid fa-circle-check me-1"></i>Opérationnel</span>
+                            <span class="badge bg-success bg-gradient px-2 py-1"><i class="fa-solid fa-circle-check me-1"></i>Opérationnel</span>
                         {% elif eq.statut.libelle == "En maintenance" %}
-                            <span class="badge bg-warning text-dark px-2 py-1.5"><i class="fa-solid fa-wrench me-1"></i>Maintenance</span>
+                            <span class="badge bg-warning text-dark px-2 py-1"><i class="fa-solid fa-wrench me-1"></i>Maintenance</span>
                         {% else %}
-                            <span class="badge bg-danger bg-gradient px-2 py-1.5"><i class="fa-solid fa-ban me-1"></i>En Panne</span>
+                            <span class="badge bg-danger bg-gradient px-2 py-1"><i class="fa-solid fa-ban me-1"></i>En Panne</span>
                         {% endif %}
                     </td>
                     <td class="text-center">
                         <div class="btn-group shadow-sm rounded-2">
                             {% if eq.cree_par and eq.cree_par == request.user or request.user.is_superuser %}
-                                <a href="{% url 'modifier_equipement' eq.id %}" class="btn btn-sm btn-white border border-end-0 text-secondary px-2.5" title="Modifier">
-                                    <i class="fa-solid fa-pen-to-square text-primary"></i> Modifier 
+                                <a href="{% url 'modifier_equipement' eq.id %}" class="btn btn-sm btn-light border border-end-0 text-secondary px-2" title="Modifier">
+                                    <i class="fa-solid fa-pen-to-square text-primary"></i> Modifier
                                 </a>
-                                <a href="{% url 'supprimer_equipement' eq.id %}" class="btn btn-sm btn-white border text-secondary px-2.5 btn-delete-confirm" title="Supprimer">
+                                <a href="{% url 'supprimer_equipement' eq.id %}" class="btn btn-sm btn-light border text-secondary px-2 btn-delete-confirm" title="Supprimer">
                                     <i class="fa-solid fa-trash-can text-danger"></i>
                                 </a>
                             {% else %}
-                                <a href="#" class="btn btn-sm btn-white border text-secondary px-2.5 disabled" title="Non autorisé">
+                                <a href="#" class="btn btn-sm btn-light border text-secondary px-2 disabled" title="Non autorisé">
                                     <i class="fa-solid fa-eye text-secondary"></i> Consulter
                                 </a>
                             {% endif %}
@@ -142,7 +141,7 @@
                     </td>
                 </tr>
                 {% endfor %}
-                
+
                 <tr id="aucunResultat" style="display: none;">
                     <td colspan="6" class="text-center py-5 text-muted">
                         <i class="fa-solid fa-magnifying-glass-blur fa-3xl d-block mb-3 text-warning"></i>
@@ -168,10 +167,10 @@
                     <span class="text-danger small fw-semibold"><i class="fa-solid fa-exclamation-triangle me-1"></i> Cette action est irréversible.</span>
                 </p>
                 <div class="d-flex gap-2 justify-content-center">
-                    <button type="button" class="btn btn-light border px-4 py-2.5 fw-medium rounded-3 w-50" data-bs-dismiss="modal">
+                    <button type="button" class="btn btn-light border px-4 py-2 fw-medium rounded-3 w-50" data-bs-dismiss="modal">
                         Annuler
                     </button>
-                    <a href="#" id="confirmDeleteButton" class="btn btn-danger bg-gradient px-4 py-2.5 fw-medium rounded-3 w-50 shadow-sm">
+                    <a href="#" id="confirmDeleteButton" class="btn btn-danger bg-gradient px-4 py-2 fw-medium rounded-3 w-50 shadow-sm">
                         <i class="fa-solid fa-trash-can me-2"></i>Supprimer
                     </a>
                 </div>
@@ -189,21 +188,21 @@ document.addEventListener('DOMContentLoaded', function () {
     const lignes = document.querySelectorAll('.ligne-equipement');
     const aucunResultat = document.getElementById('aucunResultat');
     const compteur = document.getElementById('compteurEquipements');
-    const ligneVide = document.getElementById('ligneVide');
+    const zoneFiltres = document.getElementById('zoneFiltres');
 
     // Éléments liés à la modale de suppression
     const deleteButtons = document.querySelectorAll('.btn-delete-confirm');
     const confirmDeleteButton = document.getElementById('confirmDeleteButton');
 
-    // Gestion dynamique de l'ouverture de la modale de suppression
+    // Ouverture de la modale de suppression
     deleteButtons.forEach(button => {
         button.addEventListener('click', function (event) {
-            event.preventDefault(); // Bloque le lien Django immédiat
+            event.preventDefault();
             const deleteUrl = this.getAttribute('href');
             if (deleteUrl) {
-                confirmDeleteButton.setAttribute('href', deleteUrl); // Transmet l'URL au bouton de validation
+                confirmDeleteButton.setAttribute('href', deleteUrl);
                 const deleteModal = new bootstrap.Modal(document.getElementById('deleteConfirmationModal'));
-                deleteModal.show(); // Ouvre la modale
+                deleteModal.show();
             }
         });
     });
@@ -232,12 +231,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
 
-        if (compteurTrouve === 0 && lignes.length > 0) {
-            aucunResultat.style.display = '';
-        } else {
-            aucunResultat.style.display = 'none';
-        }
-
+        aucunResultat.style.display = (compteurTrouve === 0 && lignes.length > 0) ? '' : 'none';
         compteur.textContent = `${compteurTrouve} trouvé(s)`;
     }
 
@@ -245,12 +239,11 @@ document.addEventListener('DOMContentLoaded', function () {
     selectStatut.addEventListener('change', filtrerTableau);
     selectType.addEventListener('change', filtrerTableau);
 
-    btnReinitialiser.addEventListener('click', function() {
+    btnReinitialiser.addEventListener('click', function () {
         champRecherche.value = '';
         selectStatut.value = '';
         selectType.value = '';
-        
-        const zoneFiltres = document.getElementById('zoneFiltres');
+
         const bsCollapse = bootstrap.Collapse.getInstance(zoneFiltres);
         if (bsCollapse) {
             bsCollapse.hide();
@@ -262,4 +255,4 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 </script>
-{% endblock admin_content %}  
+{% endblock admin_content %}
