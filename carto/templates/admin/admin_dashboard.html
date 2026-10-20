@@ -1,410 +1,404 @@
+{% extends "base.html" %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SGBD SIG - Tableau de Bord Administrateur</title>
-    
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <link rel="stylesheet" href="{% static 'css/admin_dashboard.css' %}">
-    
-    <style>
-        html, body {
-            height: 100%;
-            margin: 0;
-            font-family: 'Poppins', sans-serif;
-            background-color: #f8f9fa;
-        }
 
-        .main-wrapper {
-            display: flex;
-            flex-direction: row;
-            min-height: 100vh;
-        }
+{% block title %}SGBD SIG - Tableau de Bord Administrateur{% endblock %}
 
-        /* SIDEBAR PREMIUM ET UNIFORME - TOUJOURS TOUTE LA HAUTEUR */
-        .sidebar-admin {
-            background-color: #111315 !important;
-            box-shadow: 4px 0 20px rgba(0,0,0,0.2);
-            z-index: 100;
-            height: 100vh; /* Force la hauteur complète de la fenêtre */
-            position: -webkit-sticky;
-            position: sticky; /* Reste fixée pendant le défilement */
-            top: 0;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between; /* Pushes the footer all the way down */
-        }
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/admin_dashboard.css' %}">
+<style>
+    html, body {
+        height: 100%;
+        margin: 0;
+        background-color: #f8f9fa;
+    }
 
-        .sidebar-content {
-            overflow-y: auto;
-            flex-grow: 1;
-        }
+    .main-wrapper {
+        display: flex;
+        flex-direction: row;
+        min-height: 100vh;
+    }
 
-        /* Masquage de la scrollbar sur la sidebar */
-        .sidebar-content::-webkit-scrollbar {
-            width: 4px;
-        }
-        .sidebar-content::-webkit-scrollbar-thumb {
-            background: rgba(255,255,255,0.1);
-            border-radius: 2px;
-        }
+    /* SIDEBAR ADMINISTRATION - TOUTE LA HAUTEUR, FIXE AU DÉFILEMENT */
+    .sidebar-admin {
+        background-color: #111315 !important;
+        box-shadow: 4px 0 20px rgba(0,0,0,0.2);
+        z-index: 100;
+        height: 100vh;
+        position: sticky;
+        top: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
 
-        .menu-section-title {
-            color: #ffffff !important;
-            font-size: 0.85rem !important;
-            font-weight: 700 !important;
-            letter-spacing: 1.5px;
-            padding: 10px 14px;
-            background: linear-gradient(90deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0) 100%);
-            border-radius: 6px;
-            margin-top: 1.5rem;
-            margin-bottom: 0.6rem;
-            border-left: 4px solid #0dcaf0;
-        }
+    .sidebar-content {
+        overflow-y: auto;
+        flex-grow: 1;
+    }
 
-        .sidebar-menu .nav-link {
-            font-size: 0.98rem;
-            font-weight: 400;
-            color: rgba(255, 255, 255, 0.8) !important;
-            padding: 10px 14px !important;
-            transition: all 0.2s ease-in-out;
-        }
+    .sidebar-content::-webkit-scrollbar {
+        width: 4px;
+    }
+    .sidebar-content::-webkit-scrollbar-thumb {
+        background: rgba(255,255,255,0.1);
+        border-radius: 2px;
+    }
 
-        .sidebar-menu .nav-link:hover, .sidebar-menu .nav-link.active {
-            background-color: rgba(255, 255, 255, 0.12) !important;
-            color: #ffffff !important;
-            font-weight: 500;
-            transform: translateX(3px);
-        }
+    .menu-section-title {
+        color: #ffffff !important;
+        font-size: 0.85rem !important;
+        font-weight: 700 !important;
+        letter-spacing: 1.5px;
+        padding: 10px 14px;
+        background: linear-gradient(90deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0) 100%);
+        border-radius: 6px;
+        margin-top: 1.5rem;
+        margin-bottom: 0.6rem;
+        border-left: 4px solid #0dcaf0;
+    }
 
-        /* CARTES DU DASHBOARD HIGHLIGHTS */
-        .dash-card-giant {
-            border: none;
-            border-radius: 16px;
-            padding: 2.5rem 2rem !important;
-            background-color: #ffffff;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.04);
-            transition: transform 0.2s, box-shadow 0.2s;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
+    .sidebar-menu .nav-link {
+        font-size: 0.98rem;
+        font-weight: 400;
+        color: rgba(255, 255, 255, 0.8) !important;
+        padding: 10px 14px !important;
+        transition: all 0.2s ease-in-out;
+    }
 
-        .dash-card-giant:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 12px 24px rgba(0,0,0,0.08);
-        }
+    .sidebar-menu .nav-link:hover, .sidebar-menu .nav-link.active {
+        background-color: rgba(255, 255, 255, 0.12) !important;
+        color: #ffffff !important;
+        font-weight: 500;
+        transform: translateX(3px);
+    }
 
-        .card-number-giant {
-            font-size: 3.5rem !important;
-            font-weight: 800;
-            line-height: 1;
-            letter-spacing: -1px;
-        }
+    /* CARTES DU TABLEAU DE BORD */
+    .dash-card-giant {
+        border: none;
+        border-radius: 16px;
+        padding: 2.5rem 2rem !important;
+        background-color: #ffffff;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.04);
+        transition: transform 0.2s, box-shadow 0.2s;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
 
-        .card-label-giant {
-            font-size: 0.95rem;
-            text-transform: uppercase;
-            letter-spacing: 0.8px;
-            font-weight: 600;
-        }
+    .dash-card-giant:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 24px rgba(0,0,0,0.08);
+    }
 
-        .icon-shape-giant {
-            width: 75px;
-            height: 75px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 14px;
-        }
+    .card-number-giant {
+        font-size: 3.5rem !important;
+        font-weight: 800;
+        line-height: 1;
+        letter-spacing: -1px;
+    }
 
-        .section-separator-title {
-            font-size: 1.05rem;
-            font-weight: 700;
-            letter-spacing: 1.2px;
-            color: #495057;
-            border-bottom: 2px solid #dee2e6;
-            padding-bottom: 8px;
-        }
-    </style>
-</head>
-<body>
+    .card-label-giant {
+        font-size: 0.95rem;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        font-weight: 600;
+    }
 
-    <div class="container-fluid px-0">
-        <div class="main-wrapper">
-            
-            <div class="col-md-3 col-lg-2 bg-dark shadow px-0 text-white sidebar-admin">
-                
-                <div class="sidebar-content">
-                    <div class="sidebar-header p-4 border-bottom border-secondary text-center">
-                        <h5 class="fw-bold text-uppercase tracking-wider mb-2 text-white brand-title">
-                            <i class="fa-solid fa-map-location-dot me-2 text-info"></i>Commune SIG
-                        </h5>
-                        <span class="badge bg-secondary text-uppercase px-2 py-1" style="font-size: 0.7rem; letter-spacing: 0.5px;">
-                            Espace Administration
-                        </span>
-                    </div>
+    .icon-shape-giant {
+        width: 75px;
+        height: 75px;
+        flex-shrink: 0;
+        margin-left: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 14px;
+    }
 
-                    <div class="sidebar-menu p-3">
-                        
-                        <p class="menu-section-title text-uppercase fw-bold">Navigation</p>
-                        <ul class="nav flex-column">
-                            <li class="nav-item mb-1">
-                                <a class="nav-link rounded text-white {% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}" href="{% url 'admin_dashboard' %}">
-                                    <i class="fa-solid fa-chart-pie me-2 text-primary"></i> Tableau de bord
-                                </a>
-                            </li>
-                            <li class="nav-item mb-1">
-                                <a class="nav-link rounded" href="{% url 'carte_index' %}">
-                                    <i class="fa-solid fa-earth-africa me-2 text-info"></i> Vue Carte Publique
-                                </a>
-                            </li>
-                        </ul>
+    .section-separator-title {
+        font-size: 1.05rem;
+        font-weight: 700;
+        letter-spacing: 1.2px;
+        color: #495057;
+        border-bottom: 2px solid #dee2e6;
+        padding-bottom: 8px;
+    }
+</style>
+{% endblock %}
 
-                        <p class="menu-section-title text-uppercase fw-bold">Gestion Données SIG</p>
-                        <ul class="nav flex-column">
-                            <li class="nav-item mb-1">
-                                <a class="nav-link rounded text-white {% if request.resolver_match.url_name == 'liste_equipements' %}active{% endif %}" href="{% url 'liste_equipements' %}">
-                                    <i class="fa-solid fa-faucet-drip me-2 text-warning"></i> Équipements
-                                </a>
-                            </li>
-                            
-                            {% if "Agent" not in request.user.groups.all.values_list|stringformat:"s" and "agent" not in request.user.groups.all.values_list|stringformat:"s" %}
-                            <li class="nav-item mb-1">
-                                <a class="nav-link rounded text-white {% if request.resolver_match.url_name == 'liste_communes' %}active{% endif %}" href="{% url 'liste_communes' %}">
-                                    <i class="fa-solid fa-city me-2 text-success"></i> Communes
-                                </a>
-                            </li>
-                            <li class="nav-item mb-1">
-                                <a class="nav-link rounded text-white {% if request.resolver_match.url_name == 'liste_secteurs' %}active{% endif %}" href="{% url 'liste_secteurs' %}">
-                                    <i class="fa-solid fa-layer-group me-2 text-info"></i> Secteurs / Quartiers
-                                </a>
-                            </li>
-                            {% endif %}
-                        </ul>
+{% block navbar %}{% endblock %}
 
-                        {% if "Agent" not in request.user.groups.all.values_list|stringformat:"s" and "agent" not in request.user.groups.all.values_list|stringformat:"s" %}
-                        <p class="menu-section-title text-uppercase fw-bold">Configurations</p>
-                        <ul class="nav flex-column">
-                            <li class="nav-item mb-1">
-                                <a class="nav-link rounded text-white {% if request.resolver_match.url_name == 'liste_types_equipements' %}active{% endif %}" href="{% url 'liste_types_equipements' %}">
-                                    <i class="fa-solid fa-tags me-2 text-secondary"></i> Types d'Équipement
-                                </a>
-                            </li>
-                            <li class="nav-item mb-1">
-                                <a class="nav-link rounded text-white {% if request.resolver_match.url_name == 'liste_etats_physiques' or request.resolver_match.url_name == 'ajouter_etat_physique' or request.resolver_match.url_name == 'modifier_etat_physique' %}active{% endif %}" href="{% url 'liste_etats_physiques' %}">
-                                    <i class="fa-solid fa-wrench me-2 text-secondary"></i> États Physiques
-                                </a>
-                            </li>
-                            <li class="nav-item mb-1">
-                                <a class="nav-link rounded text-white {% if request.resolver_match.url_name == 'liste_statuts_fonctionnels' or request.resolver_match.url_name == 'ajouter_statut_fonctionnel' or request.resolver_match.url_name == 'modifier_statut_fonctionnel' %}active{% endif %}" href="{% url 'liste_statuts_fonctionnels' %}">
-                                   <i class="fa-solid fa-toggle-on me-2 text-secondary"></i> Statuts Fonctionnels
-                                </a>
-                            </li>
-                        </ul>
-                        {% endif %}
+{% block content %}
+<div class="container-fluid px-0">
+    <div class="main-wrapper">
 
-                        {% if "Agent" not in request.user.groups.all.values_list|stringformat:"s" and "agent" not in request.user.groups.all.values_list|stringformat:"s" %}
-                        <p class="menu-section-title text-uppercase fw-bold">Sécurité & Profils</p>
-                        <ul class="nav flex-column">
-                            <li class="nav-item mb-1">
-                                <a class="nav-link rounded text-white {% if request.resolver_match.url_name == 'journal_audit' %}active{% endif %}" href="{% url 'journal_audit' %}">
-                                    <i class="fa-solid fa-shield-halved me-2 text-danger"></i> Journal d'Audit
-                                </a>
-                            </li>
-                            <li class="nav-item mb-1">
-                                <a class="nav-link rounded text-white {% if request.resolver_match.url_name == 'liste_utilisateurs' or request.resolver_match.url_name == 'ajouter_utilisateur' or request.resolver_match.url_name == 'modifier_utilisateur' %}active{% endif %}" href="{% url 'liste_utilisateurs' %}">
-                                    <i class="fa-solid fa-users-gear me-2 text-warning"></i> Utilisateurs
-                                </a>
-                            </li>
-                            <li class="nav-item mb-1">
-                                <a class="nav-link rounded text-white {% if request.resolver_match.url_name == 'liste_groupes' or request.resolver_match.url_name == 'ajouter_groupe' or request.resolver_match.url_name == 'modifier_groupe' %}active bg-warning{% endif %}" href="{% url 'liste_groupes' %}">
-                                    <i class="fa-solid fa-key me-2 text-warning"></i> Groupes & Profils
-                                </a>
-                            </li>
-                        </ul>
-                        {% endif %}
+        <div class="col-md-3 col-lg-2 bg-dark shadow px-0 text-white sidebar-admin">
 
-                        <p class="menu-section-title text-uppercase fw-bold">Session</p>
-                        <ul class="nav flex-column">
-                            <li class="nav-item mb-1">
-                                <a class="nav-link rounded text-white" href="{% url 'deconnexion' %}">
-                                    <i class="fa-solid fa-sign-out-alt me-2 text-danger"></i> Se déconnecter
-                                </a>
-                            </li>
-                        </ul>
-                        
-                    </div>
-                </div>
-                
-                <div class="sidebar-footer p-3 border-top border-secondary bg-black bg-opacity-25 w-100">
-                    <div class="d-flex align-items-center">
-                        <div class="rounded-circle bg-success d-flex align-items-center justify-content-center text-white fw-bold shadow-sm" style="width: 42px; height: 42px; font-size: 1.1rem;">
-                            {{ request.user.username|slice:":1"|upper }}
-                        </div>
-                        <div class="ms-3 text-start">
-                            <p class="text-white fw-semibold mb-0 small">
-                                {% if "Agent" in request.user.groups.all.values_list|stringformat:"s" or "agent" in request.user.groups.all.values_list|stringformat:"s" %}
-                                    Agent :
-                                {% else %}
-                                    Admin :
-                                {% endif %} 
-                                <span class="text-info fw-bold">{{ request.user.username }}</span>
-                            </p>
-                            <span class="badge bg-success-subtle text-success px-2 py-0.5" style="font-size: 0.7rem;"><i class="fa-solid fa-circle me-1" style="font-size: 0.5rem;"></i>En ligne</span>
-                        </div>
-                    </div>
+            <div class="sidebar-content">
+                <div class="sidebar-header p-4 border-bottom border-secondary text-center">
+                    <h5 class="fw-bold text-uppercase tracking-wider mb-2 text-white brand-title">
+                        <i class="fa-solid fa-map-location-dot me-2 text-info"></i>Commune SIG
+                    </h5>
+                    <span class="badge bg-secondary text-uppercase px-2 py-1" style="font-size: 0.7rem; letter-spacing: 0.5px;">
+                        Espace Administration
+                    </span>
                 </div>
 
+                <div class="sidebar-menu p-3">
+
+                    <p class="menu-section-title text-uppercase fw-bold">Navigation</p>
+                    <ul class="nav flex-column">
+                        <li class="nav-item mb-1">
+                            <a class="nav-link rounded text-white {% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}" href="{% url 'admin_dashboard' %}">
+                                <i class="fa-solid fa-chart-pie me-2 text-primary"></i> Tableau de bord
+                            </a>
+                        </li>
+                        <li class="nav-item mb-1">
+                            <a class="nav-link rounded" href="{% url 'carte_index' %}">
+                                <i class="fa-solid fa-earth-africa me-2 text-info"></i> Vue Carte Publique
+                            </a>
+                        </li>
+                    </ul>
+
+                    <p class="menu-section-title text-uppercase fw-bold">Gestion Données SIG</p>
+                    <ul class="nav flex-column">
+                        <li class="nav-item mb-1">
+                            <a class="nav-link rounded text-white {% if request.resolver_match.url_name == 'liste_equipements' %}active{% endif %}" href="{% url 'liste_equipements' %}">
+                                <i class="fa-solid fa-faucet-drip me-2 text-warning"></i> Équipements
+                            </a>
+                        </li>
+
+                        {% if "Agent" not in request.user.groups.all.values_list|stringformat:"s" and "agent" not in request.user.groups.all.values_list|stringformat:"s" %}
+                        <li class="nav-item mb-1">
+                            <a class="nav-link rounded text-white {% if request.resolver_match.url_name == 'liste_communes' %}active{% endif %}" href="{% url 'liste_communes' %}">
+                                <i class="fa-solid fa-city me-2 text-success"></i> Communes
+                            </a>
+                        </li>
+                        <li class="nav-item mb-1">
+                            <a class="nav-link rounded text-white {% if request.resolver_match.url_name == 'liste_secteurs' %}active{% endif %}" href="{% url 'liste_secteurs' %}">
+                                <i class="fa-solid fa-layer-group me-2 text-info"></i> Secteurs / Quartiers
+                            </a>
+                        </li>
+                        {% endif %}
+                    </ul>
+
+                    {% if "Agent" not in request.user.groups.all.values_list|stringformat:"s" and "agent" not in request.user.groups.all.values_list|stringformat:"s" %}
+                    <p class="menu-section-title text-uppercase fw-bold">Configurations</p>
+                    <ul class="nav flex-column">
+                        <li class="nav-item mb-1">
+                            <a class="nav-link rounded text-white {% if request.resolver_match.url_name == 'liste_types_equipements' %}active{% endif %}" href="{% url 'liste_types_equipements' %}">
+                                <i class="fa-solid fa-tags me-2 text-secondary"></i> Types d'Équipement
+                            </a>
+                        </li>
+                        <li class="nav-item mb-1">
+                            <a class="nav-link rounded text-white {% if request.resolver_match.url_name == 'liste_etats_physiques' or request.resolver_match.url_name == 'ajouter_etat_physique' or request.resolver_match.url_name == 'modifier_etat_physique' %}active{% endif %}" href="{% url 'liste_etats_physiques' %}">
+                                <i class="fa-solid fa-wrench me-2 text-secondary"></i> États Physiques
+                            </a>
+                        </li>
+                        <li class="nav-item mb-1">
+                            <a class="nav-link rounded text-white {% if request.resolver_match.url_name == 'liste_statuts_fonctionnels' or request.resolver_match.url_name == 'ajouter_statut_fonctionnel' or request.resolver_match.url_name == 'modifier_statut_fonctionnel' %}active{% endif %}" href="{% url 'liste_statuts_fonctionnels' %}">
+                                <i class="fa-solid fa-toggle-on me-2 text-secondary"></i> Statuts Fonctionnels
+                            </a>
+                        </li>
+                    </ul>
+                    {% endif %}
+
+                    {% if "Agent" not in request.user.groups.all.values_list|stringformat:"s" and "agent" not in request.user.groups.all.values_list|stringformat:"s" %}
+                    <p class="menu-section-title text-uppercase fw-bold">Sécurité & Profils</p>
+                    <ul class="nav flex-column">
+                        <li class="nav-item mb-1">
+                            <a class="nav-link rounded text-white {% if request.resolver_match.url_name == 'journal_audit' %}active{% endif %}" href="{% url 'journal_audit' %}">
+                                <i class="fa-solid fa-shield-halved me-2 text-danger"></i> Journal d'Audit
+                            </a>
+                        </li>
+                        <li class="nav-item mb-1">
+                            <a class="nav-link rounded text-white {% if request.resolver_match.url_name == 'liste_utilisateurs' or request.resolver_match.url_name == 'ajouter_utilisateur' or request.resolver_match.url_name == 'modifier_utilisateur' %}active{% endif %}" href="{% url 'liste_utilisateurs' %}">
+                                <i class="fa-solid fa-users-gear me-2 text-warning"></i> Utilisateurs
+                            </a>
+                        </li>
+                        <li class="nav-item mb-1">
+                            <a class="nav-link rounded text-white {% if request.resolver_match.url_name == 'liste_groupes' or request.resolver_match.url_name == 'ajouter_groupe' or request.resolver_match.url_name == 'modifier_groupe' %}active bg-warning{% endif %}" href="{% url 'liste_groupes' %}">
+                                <i class="fa-solid fa-key me-2 text-warning"></i> Groupes & Profils
+                            </a>
+                        </li>
+                    </ul>
+                    {% endif %}
+
+                    <p class="menu-section-title text-uppercase fw-bold">Session</p>
+                    <ul class="nav flex-column">
+                        <li class="nav-item mb-1">
+                            <a class="nav-link rounded text-white" href="{% url 'deconnexion' %}">
+                                <i class="fa-solid fa-sign-out-alt me-2 text-danger"></i> Se déconnecter
+                            </a>
+                        </li>
+                    </ul>
+
+                </div>
             </div>
 
-            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-5 py-4 bg-light flex-grow-1" style="min-height: 100vh; overflow-y: auto;">
-                
-                {% if messages %}
-                    {% for message in messages %}
-                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show shadow-sm border-0 mb-4" role="alert">
-                            {% if message.tags == 'success' %}
-                                <i class="fa-solid fa-circle-check me-2"></i>
+            <div class="sidebar-footer p-3 border-top border-secondary bg-black bg-opacity-25 w-100">
+                <div class="d-flex align-items-center">
+                    <div class="rounded-circle bg-success d-flex align-items-center justify-content-center text-white fw-bold shadow-sm" style="width: 42px; height: 42px; font-size: 1.1rem;">
+                        {{ request.user.username|slice:":1"|upper }}
+                    </div>
+                    <div class="ms-3 text-start">
+                        <p class="text-white fw-semibold mb-0 small">
+                            {% if "Agent" in request.user.groups.all.values_list|stringformat:"s" or "agent" in request.user.groups.all.values_list|stringformat:"s" %}
+                                Agent :
                             {% else %}
-                                <i class="fa-solid fa-circle-exclamation me-2"></i>
+                                Admin :
                             {% endif %}
-                            {{ message }}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                        </div>
-                    {% endfor %}
-                {% endif %}
-
-                {% block admin_content %}
-                
-                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-3 mb-5 border-bottom">
-                    <div>
-                        <h1 class="h2 fw-bold text-dark mb-1">Tableau de Bord Décisionnel</h1>
-                        <p class="text-muted small mb-0">Indicateurs consolidés de gestion du patrimoine et des infrastructures géospatiales</p>
-                    </div>
-                    <div>
-                        <a href="{% url 'ajouter_equipement' %}" class="btn btn-primary bg-gradient shadow fw-medium px-4 py-2.5 rounded-3">
-                            <i class="fa-solid fa-plus me-2"></i>Saisir une infrastructure
-                        </a>
+                            <span class="text-info fw-bold">{{ request.user.username }}</span>
+                        </p>
+                        <span class="badge bg-success-subtle text-success px-2 py-1" style="font-size: 0.7rem;"><i class="fa-solid fa-circle me-1" style="font-size: 0.5rem;"></i>En ligne</span>
                     </div>
                 </div>
-
-                <p class="section-separator-title text-uppercase mb-4"><i class="fa-solid fa-chart-bar me-2 text-primary"></i>Disponibilité et Performance </p>
-                <div class="row g-4 mb-5">
-                    <div class="col-12 col-sm-6 col-xl-3">
-                        <div class="card dash-card-giant border-start border-primary border-5 shadow-sm">
-                            <div class="d-flex align-items-center justify-content-between">
-                                <div>
-                                    <h6 class="text-muted card-label-giant mb-2">Total Infrastructure</h6>
-                                    <div class="card-number-giant text-dark font-monospace">{{ total|default:"0" }}</div>
-                                </div>
-                                <div class="icon-shape-giant bg-primary-subtle text-primary">
-                                    <i class="fa-solid fa-database fa-2xl"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-12 col-sm-6 col-xl-3">
-                        <div class="card dash-card-giant border-start border-success border-5 shadow-sm">
-                            <div class="d-flex align-items-center justify-content-between">
-                                <div>
-                                    <h6 class="text-muted card-label-giant mb-2">Opérationnels</h6>
-                                    <div class="card-number-giant text-success font-monospace">{{ operationnels|default:"0" }}</div>
-                                </div>
-                                <div class="icon-shape-giant bg-success-subtle text-success">
-                                    <i class="fa-solid fa-circle-check fa-2xl"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-12 col-sm-6 col-xl-3">
-                        <div class="card dash-card-giant border-start border-warning border-5 shadow-sm">
-                            <div class="d-flex align-items-center justify-content-between">
-                                <div>
-                                    <h6 class="text-muted card-label-giant mb-2">En Maintenance</h6>
-                                    <div class="card-number-giant text-warning font-monospace">{{ en_maintenance|default:"0" }}</div>
-                                </div>
-                                <div class="icon-shape-giant bg-warning-subtle text-warning">
-                                    <i class="fa-solid fa-screwdriver-wrench fa-2xl"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-12 col-sm-6 col-xl-3">
-                        <div class="card dash-card-giant border-start border-danger border-5 shadow-sm">
-                            <div class="d-flex align-items-center justify-content-between">
-                                <div>
-                                    <h6 class="text-muted card-label-giant mb-2">En Panne</h6>
-                                    <div class="card-number-giant text-danger font-monospace">{{ en_panne|default:"0" }}</div>
-                                </div>
-                                <div class="icon-shape-giant bg-danger-subtle text-danger">
-                                    <i class="fa-solid fa-triangle-exclamation fa-2xl"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <p class="section-separator-title text-uppercase mb-4"><i class="fa-solid fa-heart-pulse me-2 text-info"></i>Diagnostic Physique Structurel </p>
-                <div class="row g-4 mb-5">
-                    <div class="col-12 col-md-4">
-                        <div class="card dash-card-giant border-start border-success border-5 shadow-sm">
-                            <div class="d-flex align-items-center justify-content-between">
-                                <div>
-                                    <h6 class="text-muted card-label-giant mb-2">Équipements Neufs</h6>
-                                    <div class="card-number-giant text-success font-monospace">{{ etat_neuf|default:"0" }}</div>
-                                </div>
-                                <div class="icon-shape-giant bg-success-subtle text-success">
-                                    <i class="fa-solid fa-shield-halved fa-2xl"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-12 col-md-4">
-                        <div class="card dash-card-giant border-start border-info border-5 shadow-sm">
-                            <div class="d-flex align-items-center justify-content-between">
-                                <div>
-                                    <h6 class="text-muted card-label-giant mb-2">Bon État</h6>
-                                    <div class="card-number-giant text-info font-monospace">{{ etat_bon|default:"0" }}</div>
-                                </div>
-                                <div class="icon-shape-giant bg-info-subtle text-info">
-                                    <i class="fa-solid fa-check-double fa-2xl"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-12 col-md-4">
-                        <div class="card dash-card-giant border-start border-warning border-5 shadow-sm">
-                            <div class="d-flex align-items-center justify-content-between">
-                                <div>
-                                    <h6 class="text-muted card-label-giant mb-2">État Dégradé</h6>
-                                    <div class="card-number-giant text-warning font-monospace">{{ etat_degrade|default:"0" }}</div>
-                                </div>
-                                <div class="icon-shape-giant bg-warning-subtle text-warning">
-                                    <i class="fa-solid fa-triangle-exclamation fa-2xl"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                {% endblock admin_content %}
-            </main>
+            </div>
 
         </div>
-    </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="{% static 'js/admin_dashboard.js' %}"></script>
-</body>
-</html>
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-5 py-4 bg-light flex-grow-1" style="min-height: 100vh; overflow-y: auto;">
+
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show shadow-sm border-0 mb-4" role="alert">
+                        {% if message.tags == 'success' %}
+                            <i class="fa-solid fa-circle-check me-2"></i>
+                        {% else %}
+                            <i class="fa-solid fa-circle-exclamation me-2"></i>
+                        {% endif %}
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            {% block admin_content %}
+
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-3 mb-5 border-bottom">
+                <div>
+                    <h1 class="h2 fw-bold text-dark mb-1">Tableau de Bord Décisionnel</h1>
+                    <p class="text-muted small mb-0">Indicateurs consolidés de gestion du patrimoine et des infrastructures géospatiales</p>
+                </div>
+                <div>
+                    <a href="{% url 'ajouter_equipement' %}" class="btn btn-primary bg-gradient shadow fw-medium px-4 py-2 rounded-3">
+                        <i class="fa-solid fa-plus me-2"></i>Saisir une infrastructure
+                    </a>
+                </div>
+            </div>
+
+            <p class="section-separator-title text-uppercase mb-4"><i class="fa-solid fa-chart-bar me-2 text-primary"></i>Disponibilité et Performance</p>
+            <div class="row g-4 mb-5">
+                <div class="col-12 col-sm-6 col-xl-3">
+                    <div class="card dash-card-giant border-start border-primary border-5 shadow-sm">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div>
+                                <h6 class="text-muted card-label-giant mb-2">Total Infrastructure</h6>
+                                <div class="card-number-giant text-dark font-monospace">{{ total|default:"0" }}</div>
+                            </div>
+                            <div class="icon-shape-giant bg-primary-subtle text-primary">
+                                <i class="fa-solid fa-database fa-2xl"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12 col-sm-6 col-xl-3">
+                    <div class="card dash-card-giant border-start border-success border-5 shadow-sm">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div>
+                                <h6 class="text-muted card-label-giant mb-2">Opérationnels</h6>
+                                <div class="card-number-giant text-success font-monospace">{{ operationnels|default:"0" }}</div>
+                            </div>
+                            <div class="icon-shape-giant bg-success-subtle text-success">
+                                <i class="fa-solid fa-circle-check fa-2xl"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12 col-sm-6 col-xl-3">
+                    <div class="card dash-card-giant border-start border-warning border-5 shadow-sm">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div>
+                                <h6 class="text-muted card-label-giant mb-2">En Maintenance</h6>
+                                <div class="card-number-giant text-warning font-monospace">{{ en_maintenance|default:"0" }}</div>
+                            </div>
+                            <div class="icon-shape-giant bg-warning-subtle text-warning">
+                                <i class="fa-solid fa-screwdriver-wrench fa-2xl"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12 col-sm-6 col-xl-3">
+                    <div class="card dash-card-giant border-start border-danger border-5 shadow-sm">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div>
+                                <h6 class="text-muted card-label-giant mb-2">En Panne</h6>
+                                <div class="card-number-giant text-danger font-monospace">{{ en_panne|default:"0" }}</div>
+                            </div>
+                            <div class="icon-shape-giant bg-danger-subtle text-danger">
+                                <i class="fa-solid fa-triangle-exclamation fa-2xl"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <p class="section-separator-title text-uppercase mb-4"><i class="fa-solid fa-heart-pulse me-2 text-info"></i>Diagnostic Physique Structurel</p>
+            <div class="row g-4 mb-5">
+                <div class="col-12 col-md-4">
+                    <div class="card dash-card-giant border-start border-success border-5 shadow-sm">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div>
+                                <h6 class="text-muted card-label-giant mb-2">Équipements Neufs</h6>
+                                <div class="card-number-giant text-success font-monospace">{{ etat_neuf|default:"0" }}</div>
+                            </div>
+                            <div class="icon-shape-giant bg-success-subtle text-success">
+                                <i class="fa-solid fa-shield-halved fa-2xl"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12 col-md-4">
+                    <div class="card dash-card-giant border-start border-info border-5 shadow-sm">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div>
+                                <h6 class="text-muted card-label-giant mb-2">Bon État</h6>
+                                <div class="card-number-giant text-info font-monospace">{{ etat_bon|default:"0" }}</div>
+                            </div>
+                            <div class="icon-shape-giant bg-info-subtle text-info">
+                                <i class="fa-solid fa-check-double fa-2xl"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12 col-md-4">
+                    <div class="card dash-card-giant border-start border-warning border-5 shadow-sm">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div>
+                                <h6 class="text-muted card-label-giant mb-2">État Dégradé</h6>
+                                <div class="card-number-giant text-warning font-monospace">{{ etat_degrade|default:"0" }}</div>
+                            </div>
+                            <div class="icon-shape-giant bg-warning-subtle text-warning">
+                                <i class="fa-solid fa-triangle-exclamation fa-2xl"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {% endblock admin_content %}
+        </main>
+
+    </div>
+</div>
+{% endblock content %}
+
+{% block extra_js %}
+<script src="{% static 'js/admin_dashboard.js' %}"></script>
+{% endblock %}
